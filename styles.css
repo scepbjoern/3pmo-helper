@@ -1,0 +1,68 @@
+/* Basic, clean layout */
+:root {
+  --bg: #0f172a;
+  --panel: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --primary: #2563eb;
+  --secondary: #374151;
+  --success: #16a34a;
+  --border: #1f2937;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.container {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+h1 { margin: 0 0 12px; font-size: 1.5rem; }
+.hint { margin: 0 0 16px; color: var(--muted); }
+.label { display:block; margin: 12px 0 6px; color: var(--muted); }
+
+#htmlInput {
+  width: 100%;
+  min-height: 260px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0b1220;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.buttons { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+button { 
+  border: 1px solid var(--border);
+  background: var(--secondary);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button.primary { background: var(--primary); border-color: #1d4ed8; }
+button.secondary { background: var(--secondary); }
+button.success { background: var(--success); border-color: #15803d; }
+button:hover { filter: brightness(1.08); }
+
+.status { margin-top: 10px; min-height: 20px; color: var(--muted); }
+
+.table-wrapper { margin-top: 18px; overflow:auto; border: 1px solid var(--border); border-radius: 8px; }
+#previewTable { width: 100%; border-collapse: collapse; }
+#previewTable th, #previewTable td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+#previewTable thead th { position: sticky; top: 0; background: #0b1220; }
+#previewTable tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+.note { margin-top: 16px; color: var(--muted); }

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StudentQuiz Table Extractor</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>StudentQuiz Table Extractor</h1>
+
+    <p class="hint">Fügen Sie unten HTML mit einer StudentQuiz-Tabelle ein. Extrahiert werden: <strong>questionname</strong>, <strong>creatorname</strong>, <strong>difficultylevel</strong>, <strong>rate</strong>, <strong>comments</strong>. Danach können Sie die Daten als Excel herunterladen.</p>
+
+    <label for="htmlInput" class="label">HTML-Eingabe</label>
+    <textarea id="htmlInput" placeholder="Hier HTML-Code einfügen..."></textarea>
+
+    <div class="buttons">
+      <button id="btnSample" type="button">Beispiel einfügen</button>
+      <button id="btnParse" type="button" class="primary">Extrahieren & Vorschau</button>
+      <button id="btnClear" type="button" class="secondary">Leeren</button>
+      <button id="btnDownload" type="button" class="success">Als Excel herunterladen</button>
+    </div>
+
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+
+    <div class="table-wrapper">
+      <table id="previewTable">
+        <thead>
+          <tr>
+            <th>questionname</th>
+            <th>creatorname</th>
+            <th>difficultylevel</th>
+            <th>rate</th>
+            <th>comments</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <details class="note">
+      <summary>Hinweis zur Extraktion</summary>
+      <ul>
+        <li><strong>difficultylevel</strong> wird nur aus <code>data-difficultylevel</code> gelesen. Falls nicht vorhanden, bleibt das Feld leer.</li>
+        <li><strong>rate</strong> wird nur aus <code>data-rate</code> gelesen. Falls nicht vorhanden, bleibt das Feld leer.</li>
+        <li><strong>comments</strong>: "n.a." wird als 0 gezählt.</li>
+      </ul>
+    </details>
+  </div>
+</body>
+</html>
