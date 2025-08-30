@@ -2,6 +2,9 @@
 
 Extrahiert aus einer in HTML eingefügten StudentQuiz-Tabelle die Felder questionname, creatorname, difficultylevel, rate und comments und ermöglicht den Export als Excel (XLSX) oder CSV.
 
+## 🎥 Video Tutorial
+[▶️ How to use, install, and build the app with Windsurf AI](https://youtu.be/ICW7BqLz2B8)
+
 ## Features
 - Einfügen von HTML im Textfeld
 - Extraktion pro Tabellenzeile
