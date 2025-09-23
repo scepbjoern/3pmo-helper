@@ -3,52 +3,105 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>StudentQuiz Table Extractor</title>
+  <title>3PMo Helper</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="vendor/xlsx.full.min.js"></script>
   <script defer src="script.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>StudentQuiz Table Extractor</h1>
+    <h1>3PMo Helper</h1>
 
-    <p class="hint">Fügen Sie unten HTML mit einer StudentQuiz-Tabelle ein. Extrahiert werden: <strong>questionname</strong>, <strong>creatorname</strong>, <strong>difficultylevel</strong>, <strong>rate</strong>, <strong>comments</strong>. Danach können Sie die Daten als Excel herunterladen.</p>
-
-    <label for="htmlInput" class="label">HTML-Eingabe</label>
-    <textarea id="htmlInput" placeholder="Hier HTML-Code einfügen..."></textarea>
-
-    <div class="buttons">
-      <button id="btnSample" type="button">Beispiel einfügen</button>
-      <button id="btnParse" type="button" class="primary">Extrahieren & Vorschau</button>
-      <button id="btnClear" type="button" class="secondary">Leeren</button>
-      <button id="btnDownload" type="button" class="success">Als Excel herunterladen</button>
+    <div class="tabs">
+      <button id="tabSQ" class="tab active" type="button">StudentQuiz-Extraktor</button>
+      <button id="tabAssign" class="tab" type="button">Studierenden-Themenzuteilung</button>
     </div>
 
-    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <section id="page-sq" class="page active" aria-labelledby="tabSQ">
+      <p class="hint">Fügen Sie unten HTML mit einer StudentQuiz-Tabelle ein. Extrahiert werden: <strong>questionname</strong>, <strong>creatorname</strong>, <strong>difficultylevel</strong>, <strong>rate</strong>, <strong>comments</strong>. Danach können Sie die Daten als Excel herunterladen.</p>
 
-    <div class="table-wrapper">
-      <table id="previewTable">
-        <thead>
-          <tr>
-            <th>questionname</th>
-            <th>creatorname</th>
-            <th>difficultylevel</th>
-            <th>rate</th>
-            <th>comments</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+      <label for="htmlInput" class="label">HTML-Eingabe</label>
+      <textarea id="htmlInput" placeholder="Hier HTML-Code einfügen..."></textarea>
 
-    <details class="note">
-      <summary>Hinweis zur Extraktion</summary>
-      <ul>
-        <li><strong>difficultylevel</strong> wird nur aus <code>data-difficultylevel</code> gelesen. Falls nicht vorhanden, bleibt das Feld leer.</li>
-        <li><strong>rate</strong> wird nur aus <code>data-rate</code> gelesen. Falls nicht vorhanden, bleibt das Feld leer.</li>
-        <li><strong>comments</strong>: "n.a." wird als 0 gezählt.</li>
-      </ul>
-    </details>
+      <div class="buttons">
+        <button id="btnSample" type="button">Beispiel einfügen</button>
+        <button id="btnParse" type="button" class="primary">Extrahieren & Vorschau</button>
+        <button id="btnClear" type="button" class="secondary">Leeren</button>
+        <button id="btnDownload" type="button" class="success">Als Excel herunterladen</button>
+      </div>
+
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+
+      <div class="table-wrapper">
+        <table id="previewTable">
+          <thead>
+            <tr>
+              <th>questionname</th>
+              <th>creatorname</th>
+              <th>difficultylevel</th>
+              <th>rate</th>
+              <th>comments</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <details class="note">
+        <summary>Hinweis zur Extraktion</summary>
+        <ul>
+          <li><strong>difficultylevel</strong> wird nur aus <code>data-difficultylevel</code> gelesen. Falls nicht vorhanden, bleibt das Feld leer.</li>
+          <li><strong>rate</strong> wird nur aus <code>data-rate</code> gelesen. Falls nicht vorhanden, bleibt das Feld leer.</li>
+          <li><strong>comments</strong>: "n.a." wird als 0 gezählt.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="page-assign" class="page" aria-labelledby="tabAssign">
+      <p class="hint">Studierenden-Themenzuteilung: Laden Sie eine Excel-Datei mit den Spalten <strong>Kuerzel</strong> und <strong>Klasse</strong> hoch, geben Sie die Testnummer und die Blöcke an und erzeugen Sie die Zuteilung.</p>
+
+      <label for="studentsFile" class="label">Excel mit Studierenden (Kuerzel, Klasse)</label>
+      <input id="studentsFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />
+
+      <label for="testNumber" class="label">Testnummer (1–12)</label>
+      <input id="testNumber" type="number" min="1" max="12" placeholder="z. B. 3" />
+
+      <label for="blocksInput" class="label">Blöcke (Semikolon-getrennt, Format: Semesterwoche_Folienbereich)</label>
+      <input id="blocksInput" type="text" placeholder="z. B. 1_8-12; 1_13-17; 2_2-6" />
+
+      <div class="buttons">
+        <button id="btnTemplate" type="button" class="secondary">Template herunterladen</button>
+        <button id="btnAssign" type="button" class="primary">Zuteilen & Vorschau</button>
+        <button id="btnDownloadAssign" type="button" class="success">Als Excel herunterladen</button>
+      </div>
+
+      <div id="assignStatus" class="status" role="status" aria-live="polite"></div>
+
+      <div id="assignSummary"></div>
+
+      <div class="table-wrapper">
+        <table id="assignPreviewTable">
+          <thead>
+            <tr>
+              <th>Kürzel</th>
+              <th>Klasse</th>
+              <th>Frage erstellen in Block</th>
+              <th>Fragen beantworten in Blöcken</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <details class="note">
+        <summary>Hinweis zum Blöcke-Format</summary>
+        <ul>
+          <li>Format pro Block: <code>Semesterwoche_Folienbereich</code> (z. B. <code>1_8-12</code>).</li>
+          <li>Mehrere Blöcke semikolongetrennt (z. B. <code>1_8-12; 1_13-17; 2_2-6</code>).</li>
+          <li>Im Output werden Wochen zweistellig formatiert (z. B. <code>SW01F8-12</code>).</li>
+        </ul>
+      </details>
+    </section>
   </div>
 </body>
 </html>

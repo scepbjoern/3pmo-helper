@@ -60,9 +60,30 @@ button:hover { filter: brightness(1.08); }
 .status { margin-top: 10px; min-height: 20px; color: var(--muted); }
 
 .table-wrapper { margin-top: 18px; overflow:auto; border: 1px solid var(--border); border-radius: 8px; }
-#previewTable { width: 100%; border-collapse: collapse; }
-#previewTable th, #previewTable td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
-#previewTable thead th { position: sticky; top: 0; background: #0b1220; }
-#previewTable tbody tr:hover { background: rgba(255,255,255,0.03); }
+#previewTable, #assignPreviewTable, .summary-table { width: 100%; border-collapse: collapse; }
+#previewTable th, #previewTable td, #assignPreviewTable th, #assignPreviewTable td, .summary-table th, .summary-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+#previewTable thead th, #assignPreviewTable thead th, .summary-table thead th { position: sticky; top: 0; background: #0b1220; }
+#previewTable tbody tr:hover, #assignPreviewTable tbody tr:hover, .summary-table tbody tr:hover { background: rgba(255,255,255,0.03); }
 
 .note { margin-top: 16px; color: var(--muted); }
+
+/* Tabs & pages */
+.tabs { display: flex; gap: 10px; margin: 8px 0 16px; flex-wrap: wrap; }
+.tab { background: var(--secondary); }
+.tab.active { background: var(--primary); border-color: #1d4ed8; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* Inputs for assignment page */
+input[type="text"], input[type="number"], input[type="file"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0b1220;
+  color: var(--text);
+}
+
+/* Summary sections */
+.summary-section { margin-top: 16px; }
+.summary-section h3 { margin: 8px 0; font-size: 1rem; color: var(--text); }
