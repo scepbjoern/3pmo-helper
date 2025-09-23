@@ -9,7 +9,7 @@ Die App ist vollständig clientseitig, benötigt keinen Server und kann einfach 
 
 ## 🎥 Video‑Tutorials
 - ▶️ How to use, install, and build the app with Windsurf AI: https://youtu.be/ICW7BqLz2B8
-- ▶️ 3PMo Helper – Studierenden‑Themenzuteilung: HIER LINK EINFÜGEN
+- ▶️ 3PMo Helper – Studierenden‑Themenzuteilung: https://youtu.be/E9MqgW1tyAA
 
 ## Features
 
