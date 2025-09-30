@@ -175,3 +175,13 @@ textarea {
   font-weight: bold;
   font-size: 0.85rem;
 }
+
+/* Highlight colors for question count */
+.highlight-violet {
+  color: #a855f7;
+  font-weight: bold;
+}
+.highlight-red {
+  color: #ef4444;
+  font-weight: bold;
+}

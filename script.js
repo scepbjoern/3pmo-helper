@@ -104,6 +104,12 @@
     return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   }
 
+  function removeParentheses(name) {
+    // Remove everything from first opening parenthesis onwards
+    const idx = name.indexOf('(');
+    return idx >= 0 ? name.substring(0, idx).trim() : name.trim();
+  }
+
   function updateGradesButtonState() {
     // Enable "Bewertungen generieren" if we have data from Bereich 2 or 3
     if (els.btnGenerateGrades) {
@@ -156,6 +162,7 @@
       let creatorname = creatorHTML
         .replace(/<span[^>]*class="[^"]*date[^"]*"[^>]*>[\s\S]*?<\/span>/gi, ' ');
       creatorname = stripTags(creatorname);
+      creatorname = removeParentheses(creatorname);
       // Sometimes there is only an empty span; ensure empty becomes ''
       if (/^n\.a\.$/i.test(creatorname)) creatorname = '';
 
@@ -316,7 +323,8 @@
       if (!tdName && !tdPub && !tdStars && !tdCorrect && !tdWrong) return;
 
       const nameHTML = tdName ? tdName.innerHTML : '';
-      const name = stripTags(nameHTML);
+      let name = stripTags(nameHTML);
+      name = removeParentheses(name);
 
       const published = numberOrNull(tdPub ? tdPub.textContent : '');
       const rating = numberOrNull(tdStars ? tdStars.textContent : '');
@@ -487,6 +495,18 @@
         totalComments = sqData.reduce((sum, r) => sum + (parseInt(r.comments,10) || 0), 0);
       }
 
+      // Calculate sum of correct + false answers
+      let totalAnswersPoints = null;
+      const correctPts = rankData ? rankData.correct_answers_points : null;
+      const falsePts = rankData ? rankData.false_answers_points : null;
+      if (correctPts != null && falsePts != null) {
+        totalAnswersPoints = correctPts + falsePts;
+      } else if (correctPts != null) {
+        totalAnswersPoints = correctPts;
+      } else if (falsePts != null) {
+        totalAnswersPoints = falsePts;
+      }
+
       const row = {
         student_name: displayName,
         // From Bereich 2 (StudentQuiz)
@@ -498,7 +518,8 @@
         published_question_points: rankData ? rankData.published_question_points : null,
         rating_points: rankData ? rankData.rating_points : null,
         correct_answers_points: rankData ? rankData.correct_answers_points : null,
-        false_answers_points: rankData ? rankData.false_answers_points : null
+        false_answers_points: rankData ? rankData.false_answers_points : null,
+        total_answers_points: totalAnswersPoints
       };
 
       combined.push(row);
@@ -523,23 +544,36 @@
       const tr = document.createElement('tr');
 
       const cells = [
-        r.student_name,
-        r.question_count,
-        r.avg_difficultylevel,
-        r.avg_rate,
-        r.total_comments,
-        r.published_question_points,
-        r.rating_points,
-        r.correct_answers_points,
-        r.false_answers_points
+        { val: r.student_name, key: 'student_name' },
+        { val: r.question_count, key: 'question_count' },
+        { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
+        { val: r.avg_rate, key: 'avg_rate' },
+        { val: r.total_comments, key: 'total_comments' },
+        { val: r.published_question_points, key: 'published_question_points' },
+        { val: r.rating_points, key: 'rating_points' },
+        { val: r.correct_answers_points, key: 'correct_answers_points' },
+        { val: r.false_answers_points, key: 'false_answers_points' },
+        { val: r.total_answers_points, key: 'total_answers_points' }
       ];
 
-      cells.forEach(val => {
+      cells.forEach(cell => {
         const td = document.createElement('td');
-        if (val == null || val === '') {
+        if (cell.val == null || cell.val === '') {
           td.innerHTML = '<span class="missing">MISSING</span>';
         } else {
-          td.textContent = val;
+          // Color coding for question_count
+          if (cell.key === 'question_count') {
+            const count = parseInt(cell.val, 10);
+            if (count > 1) {
+              td.innerHTML = `<span class="highlight-violet">${cell.val}</span>`;
+            } else if (count === 0) {
+              td.innerHTML = `<span class="highlight-red">${cell.val}</span>`;
+            } else {
+              td.textContent = cell.val;
+            }
+          } else {
+            td.textContent = cell.val;
+          }
         }
         tr.appendChild(td);
       });
@@ -563,7 +597,8 @@
       published_question_points: r.published_question_points ?? 'MISSING',
       rating_points: r.rating_points ?? 'MISSING',
       correct_answers_points: r.correct_answers_points ?? 'MISSING',
-      false_answers_points: r.false_answers_points ?? 'MISSING'
+      false_answers_points: r.false_answers_points ?? 'MISSING',
+      total_answers_points: r.total_answers_points ?? 'MISSING'
     }));
 
     if (window.XLSX && XLSX.utils && XLSX.writeFile) {
