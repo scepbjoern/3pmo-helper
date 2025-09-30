@@ -205,10 +205,14 @@
     renderTable(results);
     setStatus(results.length ? `${results.length} Zeilen extrahiert.` : 'Keine passenden Daten gefunden.');
     updateGradesButtonState();
+    
+    // Clear input to improve performance
+    els.input.value = '';
   }
 
   function renderTable(rows) {
     els.tableBody.innerHTML = '';
+    const fragment = document.createDocumentFragment();
     rows.forEach(r => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -216,14 +220,15 @@
         <td>${escapeHtml(r.creatorname)}</td>
         <td>${escapeHtml(r.difficultylevel)}</td>
         <td>${escapeHtml(r.rate)}</td>
-        <td>${r.comments != null ? r.comments : ''}</td>
+        <td>${escapeHtml(r.comments)}</td>
       `;
-      els.tableBody.appendChild(tr);
+      fragment.appendChild(tr);
     });
+    els.tableBody.appendChild(fragment);
   }
 
-  function escapeHtml(s) {
-    return String(s ?? '')
+  function escapeHtml(text) {
+    return String(text ?? '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -348,11 +353,15 @@
     renderRankingTable(results);
     setRankingStatus(results.length ? `${results.length} Zeilen extrahiert.` : 'Keine passenden Daten gefunden.');
     updateGradesButtonState();
+    
+    // Clear input to improve performance
+    if (els.inputRanking) els.inputRanking.value = '';
   }
 
   function renderRankingTable(rows) {
     if (!els.rankingTableBody) return;
     els.rankingTableBody.innerHTML = '';
+    const fragment = document.createDocumentFragment();
     rows.forEach(r => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -362,8 +371,9 @@
         <td>${r.correct_answers_points ?? ''}</td>
         <td>${r.false_answers_points ?? ''}</td>
       `;
-      els.rankingTableBody.appendChild(tr);
+      fragment.appendChild(tr);
     });
+    els.rankingTableBody.appendChild(fragment);
   }
 
   function toRankingWorksheetData(rows) {
@@ -539,6 +549,7 @@
   function renderCombinedGradesTable(rows) {
     if (!els.gradesTableBody) return;
     els.gradesTableBody.innerHTML = '';
+    const fragment = document.createDocumentFragment();
 
     rows.forEach(r => {
       const tr = document.createElement('tr');
@@ -578,8 +589,10 @@
         tr.appendChild(td);
       });
 
-      els.gradesTableBody.appendChild(tr);
+      fragment.appendChild(tr);
     });
+    
+    els.gradesTableBody.appendChild(fragment);
   }
 
   function downloadCombinedGradesExcel() {
