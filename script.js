@@ -546,8 +546,14 @@
         rating_points: rankData ? rankData.rating_points : null,
         correct_answers_points: rankData ? rankData.correct_answers_points : null,
         false_answers_points: rankData ? rankData.false_answers_points : null,
-        total_answers_points: totalAnswersPoints
+        total_answers_points: totalAnswersPoints,
+        automatic_grade: null,
+        manual_grade: null,
+        justification: ''
       };
+
+      // Calculate automatic grade
+      row.automatic_grade = calculateAutomaticGrade(row);
 
       combined.push(row);
     }
@@ -581,7 +587,10 @@
         { val: r.rating_points, key: 'rating_points' },
         { val: r.correct_answers_points, key: 'correct_answers_points' },
         { val: r.false_answers_points, key: 'false_answers_points' },
-        { val: r.total_answers_points, key: 'total_answers_points' }
+        { val: r.total_answers_points, key: 'total_answers_points' },
+        { val: r.automatic_grade, key: 'automatic_grade' },
+        { val: r.manual_grade, key: 'manual_grade' },
+        { val: r.justification, key: 'justification' }
       ];
 
       cells.forEach(cell => {
@@ -599,6 +608,12 @@
             } else {
               td.textContent = cell.val;
             }
+          } else if (cell.key === 'automatic_grade' && cell.val != null) {
+            td.innerHTML = `<strong>${cell.val}%</strong>`;
+          } else if (cell.key === 'manual_grade') {
+            td.textContent = cell.val || '';
+          } else if (cell.key === 'justification') {
+            td.textContent = cell.val || '';
           } else {
             td.textContent = cell.val;
           }
@@ -628,7 +643,10 @@
       rating_points: r.rating_points ?? 'MISSING',
       correct_answers_points: r.correct_answers_points ?? 'MISSING',
       false_answers_points: r.false_answers_points ?? 'MISSING',
-      total_answers_points: r.total_answers_points ?? 'MISSING'
+      total_answers_points: r.total_answers_points ?? 'MISSING',
+      automatic_grade: r.automatic_grade ?? 'MISSING',
+      manual_grade: r.manual_grade ?? '',
+      justification: r.justification ?? ''
     }));
 
     if (window.XLSX && XLSX.utils && XLSX.writeFile) {

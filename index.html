@@ -6,6 +6,7 @@
   <title>3PMo Helper</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="vendor/xlsx.full.min.js"></script>
+  <script src="grading.js"></script>
   <script defer src="script.js"></script>
 </head>
 <body>
@@ -147,6 +148,9 @@
                   <th>Punkte richtige Antworten</th>
                   <th>Punkte falsche Antworten</th>
                   <th>Σ Punkte Antworten</th>
+                  <th>Automatische Bewertung</th>
+                  <th>Manuelle Bewertung</th>
+                  <th>Begründung</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -155,11 +159,14 @@
 
           <details class="note">
             <summary>Hinweis zur Bewertung</summary>
+            <p><strong>Automatische Bewertung (0-100%):</strong> Gewichtete Gesamtbewertung aus drei Aspekten:</p>
             <ul>
-              <li>Die automatische Bewertung wird basierend auf den extrahierten Daten berechnet.</li>
-              <li>Sie können die automatische Bewertung manuell überschreiben.</li>
-              <li>Begründungen helfen bei der Nachvollziehbarkeit manueller Anpassungen.</li>
+              <li><strong>Frage erstellt (50%):</strong> 0 Fragen = 0%, 1 Frage = 100%, mehr als 1 Frage = 70%</li>
+              <li><strong>Fragebewertung (25%):</strong> Basierend auf erhaltenen Sternen pro veröffentlichter Frage, normalisiert auf Skala 0-5 (5 Sterne = 100%)</li>
+              <li><strong>Fragen beantwortet (25%):</strong> Basierend auf Summe der Antwortpunkte, normalisiert auf max. 5 Punkte (≥5 Punkte = 100%)</li>
             </ul>
+            <p><strong>Formel:</strong> 50% × Bewertung_FrageErstellt + 25% × Bewertung_FrageBewertung + 25% × Bewertung_FragenBeantwortung</p>
+            <p><strong>Manuelle Bewertung:</strong> Kann verwendet werden, um die automatische Bewertung zu überschreiben. Begründungen helfen bei der Nachvollziehbarkeit.</p>
           </details>
         </div>
       </details>
