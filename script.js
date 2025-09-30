@@ -17,6 +17,15 @@
     pageSQ: $('#page-sq'),
     pageAssign: $('#page-assign'),
 
+    // Ranking UI (Bereich 3)
+    inputRanking: $('#htmlInputRanking'),
+    btnSampleRanking: $('#btnSampleRanking'),
+    btnParseRanking: $('#btnParseRanking'),
+    btnClearRanking: $('#btnClearRanking'),
+    btnDownloadRanking: $('#btnDownloadRanking'),
+    statusRanking: $('#statusRanking'),
+    rankingTableBody: $('#previewTableRanking tbody'),
+
     // Assignment UI
     studentsFile: $('#studentsFile'),
     testNumber: $('#testNumber'),
@@ -29,6 +38,7 @@
   };
 
   let extractedRows = [];
+  let rankingRows = [];
   // Data for assignment page
   let studentsList = []; // [{Kuerzel, Klasse}]
   let assignRows = [];   // rows for preview/export
@@ -40,6 +50,10 @@
 
   function setAssignStatus(msg) {
     if (els.assignStatus) els.assignStatus.textContent = msg || '';
+  }
+
+  function setRankingStatus(msg) {
+    if (els.statusRanking) els.statusRanking.textContent = msg || '';
   }
 
   function insertSample() {
@@ -60,6 +74,11 @@
     // keep digits and single dot
     const m = s.match(/-?[0-9]+(?:\.[0-9]+)?/);
     return m ? m[0] : '';
+  }
+
+  function numberOrNull(str) {
+    const n = normalizeNumber(str);
+    return n === '' ? null : parseFloat(n);
   }
 
   function extractWithRegex(innerHTML, patterns) {
@@ -235,6 +254,154 @@
       lines.push(headers.map(h => escape(row[h])).join(','));
     }
     return lines.join('\r\n');
+  }
+
+  // --- Bereich 3: Rangliste-Extraktion ---
+  function insertSampleRanking() {
+    if (!els.inputRanking) return;
+    els.inputRanking.value = getSampleRankingHTML().trim();
+    setRankingStatus('Beispiel eingefügt.');
+  }
+
+  function clearRanking() {
+    if (els.inputRanking) els.inputRanking.value = '';
+    rankingRows = [];
+    renderRankingTable([]);
+    setRankingStatus('Eingabe und Ergebnis geleert.');
+  }
+
+  function parseRankingHTML() {
+    const html = els.inputRanking && els.inputRanking.value;
+    if (!html || !String(html).trim()) { setRankingStatus('Bitte HTML einfügen.'); return; }
+
+    let doc;
+    try {
+      const parser = new DOMParser();
+      doc = parser.parseFromString(html, 'text/html');
+    } catch (e) {
+      setRankingStatus('Fehler beim Parsen des HTML.');
+      return;
+    }
+
+    const rows = $$('table tbody tr', doc);
+    const trList = rows.length ? rows : $$('tr', doc);
+
+    const results = [];
+    trList.forEach(tr => {
+      const tdName = $('td.cell.c1', tr);
+      const tdPub = $('td.cell.c3', tr);
+      const tdStars = $('td.cell.c5', tr);
+      const tdCorrect = $('td.cell.c6', tr);
+      const tdWrong = $('td.cell.c7', tr);
+
+      if (!tdName && !tdPub && !tdStars && !tdCorrect && !tdWrong) return;
+
+      const nameHTML = tdName ? tdName.innerHTML : '';
+      const name = stripTags(nameHTML);
+
+      const published = numberOrNull(tdPub ? tdPub.textContent : '');
+      const rating = numberOrNull(tdStars ? tdStars.textContent : '');
+      const correct = numberOrNull(tdCorrect ? tdCorrect.textContent : '');
+      const wrong = numberOrNull(tdWrong ? tdWrong.textContent : '');
+
+      const row = {
+        student_name: name || '',
+        published_question_points: published ?? null,
+        rating_points: rating ?? null,
+        correct_answers_points: correct ?? null,
+        false_answers_points: wrong ?? null
+      };
+
+      if (row.student_name || row.published_question_points != null || row.rating_points != null || row.correct_answers_points != null || row.false_answers_points != null) {
+        results.push(row);
+      }
+    });
+
+    rankingRows = results;
+    renderRankingTable(results);
+    setRankingStatus(results.length ? `${results.length} Zeilen extrahiert.` : 'Keine passenden Daten gefunden.');
+  }
+
+  function renderRankingTable(rows) {
+    if (!els.rankingTableBody) return;
+    els.rankingTableBody.innerHTML = '';
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(r.student_name)}</td>
+        <td>${r.published_question_points ?? ''}</td>
+        <td>${r.rating_points ?? ''}</td>
+        <td>${r.correct_answers_points ?? ''}</td>
+        <td>${r.false_answers_points ?? ''}</td>
+      `;
+      els.rankingTableBody.appendChild(tr);
+    });
+  }
+
+  function toRankingWorksheetData(rows) {
+    return rows.map(r => ({
+      student_name: r.student_name,
+      published_question_points: r.published_question_points,
+      rating_points: r.rating_points,
+      correct_answers_points: r.correct_answers_points,
+      false_answers_points: r.false_answers_points
+    }));
+  }
+
+  function downloadRankingExcel() {
+    if (!Array.isArray(rankingRows) || !rankingRows.length) { setRankingStatus('Keine Daten zum Exportieren. Bitte zuerst extrahieren.'); return; }
+    const data = toRankingWorksheetData(rankingRows);
+    if (window.XLSX && XLSX.utils && XLSX.writeFile) {
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Rangliste');
+      XLSX.writeFile(wb, '3PMo_Helper_Rangliste_Extrakt.xlsx');
+      setRankingStatus(`Excel exportiert (${data.length} Zeilen).`);
+    } else {
+      const csv = toCSV(data);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '3PMo_Helper_Rangliste_Extrakt.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setRankingStatus(`CSV exportiert (${data.length} Zeilen).`);
+    }
+  }
+
+  function getSampleRankingHTML() {
+    return `
+<table class="generaltable rankingtable">
+  <thead>
+    <tr>
+      <th class="header c0">Rang</th>
+      <th class="header c1">Vollständiger Name</th>
+      <th class="header c2">Total Punkte</th>
+      <th class="header c3">Punkte für veröffentlichte Fragen</th>
+      <th class="header c4">Punkte für bestätigte Fragen</th>
+      <th class="header c5">Punkte für erhaltene Sterne</th>
+      <th class="header c6">Punkte für richtige Antworten beim letzten Versuch</th>
+      <th class="header c7">Punkte für falsche Antworten beim letzten Versuch</th>
+      <th class="header c8 lastcol">Persönlicher Fortschritt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="cell c0">1</td>
+      <td class="cell c1"><a href="#">Max Muster</a></td>
+      <td class="cell c2">28.5</td>
+      <td class="cell c3">1</td>
+      <td class="cell c4">0</td>
+      <td class="cell c5">4.5</td>
+      <td class="cell c6">13</td>
+      <td class="cell c7">10</td>
+      <td class="cell c8 lastcol">13 %</td>
+    </tr>
+  </tbody>
+</table>`;
   }
 
   // --- Tabs ---
@@ -593,6 +760,12 @@
   if (els.btnParse) els.btnParse.addEventListener('click', parseHTML);
   if (els.btnClear) els.btnClear.addEventListener('click', clearAll);
   if (els.btnDownload) els.btnDownload.addEventListener('click', downloadExcel);
+
+  // Ranking events
+  if (els.btnSampleRanking) els.btnSampleRanking.addEventListener('click', insertSampleRanking);
+  if (els.btnParseRanking) els.btnParseRanking.addEventListener('click', parseRankingHTML);
+  if (els.btnClearRanking) els.btnClearRanking.addEventListener('click', clearRanking);
+  if (els.btnDownloadRanking) els.btnDownloadRanking.addEventListener('click', downloadRankingExcel);
 
   // Tabs
   if (els.tabSQ && els.tabAssign) {

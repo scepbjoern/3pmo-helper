@@ -20,8 +20,8 @@
     <section id="page-sq" class="page active" aria-labelledby="tabSQ">
       
       <!-- Bereich 1: Übersicht -->
-      <div class="wizard-section">
-        <h2>1. Übersicht</h2>
+      <details class="wizard-section" open>
+        <summary><h2>1. Übersicht</h2></summary>
         <div class="wizard-content">
           <p class="hint">Willkommen beim StudentQuiz-Bewertungs-Wizard. Folgen Sie diesen Schritten:</p>
           <ol>
@@ -31,11 +31,11 @@
             <li><strong>Export:</strong> Laden Sie die finalen Bewertungen als Excel-Datei herunter.</li>
           </ol>
         </div>
-      </div>
+      </details>
 
       <!-- Bereich 2: StudentQuiz-Tabelle extrahieren -->
-      <div class="wizard-section">
-        <h2>2. StudentQuiz-Tabelle extrahieren</h2>
+      <details class="wizard-section" open>
+        <summary><h2>2. StudentQuiz-Tabelle extrahieren</h2></summary>
         <div class="wizard-content">
           <p class="hint">Fügen Sie unten HTML mit der Tabelle aus dem Reiter "StudentQuiz" einer Moodle-Aktivität "StudentQuiz" ein. Extrahiert werden: <strong>questionname</strong>, <strong>creatorname</strong>, <strong>difficultylevel</strong>, <strong>rate</strong>, <strong>comments</strong>. Danach können Sie die Daten als Excel herunterladen.</p>
 
@@ -75,11 +75,11 @@
             </ul>
           </details>
         </div>
-      </div>
+      </details>
 
       <!-- Bereich 3: Rangliste-Tabelle extrahieren -->
-      <div class="wizard-section">
-        <h2>3. Rangliste-Tabelle extrahieren</h2>
+      <details class="wizard-section" open>
+        <summary><h2>3. Rangliste-Tabelle extrahieren</h2></summary>
         <div class="wizard-content">
           <p class="hint">Fügen Sie unten HTML mit der Tabelle aus dem Reiter "Rangliste" einer Moodle-Aktivität "StudentQuiz" ein. Extrahiert werden: <strong>student_name</strong>, <strong>published_question_points</strong>, <strong>rating_points</strong>, <strong>correct_answers_points</strong>, <strong>false_answers_points</strong>. Danach können Sie die Daten als Excel herunterladen.</p>
 
@@ -118,11 +118,11 @@
             </ul>
           </details>
         </div>
-      </div>
+      </details>
 
       <!-- Bereich 4: Bewertungen -->
-      <div class="wizard-section">
-        <h2>4. Bewertungen</h2>
+      <details class="wizard-section" open>
+        <summary><h2>4. Bewertungen</h2></summary>
         <div class="wizard-content">
           <p class="hint">In diesem Bereich werden basierend auf den extrahierten Daten aus den Bereichen 2 und 3 automatisch Bewertungen für die Studierenden berechnet. Sie können die automatisch generierten Bewertungen manuell überschreiben und Begründungen hinzufügen. Am Ende können Sie die finalen Bewertungen als Excel-Datei exportieren.</p>
           
@@ -156,7 +156,7 @@
             </ul>
           </details>
         </div>
-      </div>
+      </details>
 
     </section>
 

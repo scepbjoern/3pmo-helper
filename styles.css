@@ -96,12 +96,37 @@ input[type="text"], input[type="number"], input[type="file"] {
   border: 1px solid var(--border);
   border-radius: 10px;
 }
+.wizard-section summary {
+  cursor: pointer;
+  list-style: none;
+  margin: -20px -20px 16px -20px;
+  padding: 16px 20px;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: 10px 10px 0 0;
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+.wizard-section summary::-webkit-details-marker {
+  display: none;
+}
+.wizard-section summary::before {
+  content: '▶';
+  display: inline-block;
+  margin-right: 8px;
+  transition: transform 0.2s;
+  color: var(--primary);
+}
+.wizard-section[open] summary::before {
+  transform: rotate(90deg);
+}
+.wizard-section summary:hover {
+  background: rgba(37, 99, 235, 0.15);
+}
 .wizard-section h2 {
-  margin: 0 0 16px 0;
+  display: inline;
+  margin: 0;
   font-size: 1.25rem;
   color: var(--primary);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 10px;
 }
 .wizard-section ol {
   margin: 8px 0;
