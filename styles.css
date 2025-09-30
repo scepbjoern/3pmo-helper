@@ -168,3 +168,10 @@ textarea {
 #previewTableRanking tbody tr:hover, #gradesTable tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* MISSING indicator */
+.missing {
+  color: #ef4444;
+  font-weight: bold;
+  font-size: 0.85rem;
+}

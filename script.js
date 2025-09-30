@@ -26,6 +26,12 @@
     statusRanking: $('#statusRanking'),
     rankingTableBody: $('#previewTableRanking tbody'),
 
+    // Grades UI (Bereich 4)
+    btnGenerateGrades: $('#btnGenerateGrades'),
+    btnDownloadGrades: $('#btnDownloadGrades'),
+    statusGrades: $('#statusGrades'),
+    gradesTableBody: $('#gradesTable tbody'),
+
     // Assignment UI
     studentsFile: $('#studentsFile'),
     testNumber: $('#testNumber'),
@@ -39,6 +45,7 @@
 
   let extractedRows = [];
   let rankingRows = [];
+  let combinedGradesData = []; // Combined data from Bereich 2 & 3
   // Data for assignment page
   let studentsList = []; // [{Kuerzel, Klasse}]
   let assignRows = [];   // rows for preview/export
@@ -54,6 +61,10 @@
 
   function setRankingStatus(msg) {
     if (els.statusRanking) els.statusRanking.textContent = msg || '';
+  }
+
+  function setGradesStatus(msg) {
+    if (els.statusGrades) els.statusGrades.textContent = msg || '';
   }
 
   function insertSample() {
@@ -91,6 +102,13 @@
 
   function stripTags(html) {
     return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  function updateGradesButtonState() {
+    // Enable "Bewertungen generieren" if we have data from Bereich 2 or 3
+    if (els.btnGenerateGrades) {
+      els.btnGenerateGrades.disabled = !(extractedRows.length > 0 || rankingRows.length > 0);
+    }
   }
 
   function parseHTML() {
@@ -179,6 +197,7 @@
     extractedRows = results;
     renderTable(results);
     setStatus(results.length ? `${results.length} Zeilen extrahiert.` : 'Keine passenden Daten gefunden.');
+    updateGradesButtonState();
   }
 
   function renderTable(rows) {
@@ -320,6 +339,7 @@
     rankingRows = results;
     renderRankingTable(results);
     setRankingStatus(results.length ? `${results.length} Zeilen extrahiert.` : 'Keine passenden Daten gefunden.');
+    updateGradesButtonState();
   }
 
   function renderRankingTable(rows) {
@@ -402,6 +422,169 @@
     </tr>
   </tbody>
 </table>`;
+  }
+
+  // --- Bereich 4: Bewertungen (kombinierte Tabelle) ---
+  function normalizeStudentName(name) {
+    // Normalize student names for matching (trim, lowercase, remove extra spaces)
+    return String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  function generateCombinedGrades() {
+    if (!extractedRows.length && !rankingRows.length) {
+      setGradesStatus('Bitte zuerst Daten in Bereich 2 und/oder 3 extrahieren.');
+      return;
+    }
+
+    // Build map: normalized name -> data from Bereich 2 (StudentQuiz)
+    const sqMap = new Map();
+    for (const row of extractedRows) {
+      const name = normalizeStudentName(row.creatorname);
+      if (!name) continue;
+      if (!sqMap.has(name)) {
+        sqMap.set(name, []);
+      }
+      sqMap.get(name).push(row);
+    }
+
+    // Build map: normalized name -> data from Bereich 3 (Rangliste)
+    const rankMap = new Map();
+    for (const row of rankingRows) {
+      const name = normalizeStudentName(row.student_name);
+      if (!name) continue;
+      rankMap.set(name, row);
+    }
+
+    // Merge: union of all student names
+    const allNames = new Set([...sqMap.keys(), ...rankMap.keys()]);
+    const combined = [];
+
+    for (const normName of allNames) {
+      const sqData = sqMap.get(normName) || [];
+      const rankData = rankMap.get(normName);
+
+      // Use original name from ranking if available, else from SQ
+      let displayName = '';
+      if (rankData && rankData.student_name) {
+        displayName = rankData.student_name;
+      } else if (sqData.length && sqData[0].creatorname) {
+        displayName = sqData[0].creatorname;
+      } else {
+        displayName = normName; // fallback
+      }
+
+      // Aggregate SQ data: count questions, avg difficulty, avg rate, sum comments
+      let questionCount = sqData.length;
+      let avgDifficulty = null;
+      let avgRate = null;
+      let totalComments = 0;
+
+      if (sqData.length) {
+        const difficulties = sqData.map(r => parseFloat(r.difficultylevel)).filter(v => !isNaN(v));
+        const rates = sqData.map(r => parseFloat(r.rate)).filter(v => !isNaN(v));
+        if (difficulties.length) avgDifficulty = (difficulties.reduce((a,b)=>a+b,0) / difficulties.length).toFixed(2);
+        if (rates.length) avgRate = (rates.reduce((a,b)=>a+b,0) / rates.length).toFixed(2);
+        totalComments = sqData.reduce((sum, r) => sum + (parseInt(r.comments,10) || 0), 0);
+      }
+
+      const row = {
+        student_name: displayName,
+        // From Bereich 2 (StudentQuiz)
+        question_count: questionCount > 0 ? questionCount : null,
+        avg_difficultylevel: avgDifficulty,
+        avg_rate: avgRate,
+        total_comments: totalComments > 0 ? totalComments : null,
+        // From Bereich 3 (Rangliste)
+        published_question_points: rankData ? rankData.published_question_points : null,
+        rating_points: rankData ? rankData.rating_points : null,
+        correct_answers_points: rankData ? rankData.correct_answers_points : null,
+        false_answers_points: rankData ? rankData.false_answers_points : null
+      };
+
+      combined.push(row);
+    }
+
+    // Sort by student name
+    combined.sort((a, b) => String(a.student_name).localeCompare(String(b.student_name), 'de-CH', { sensitivity: 'base' }));
+
+    combinedGradesData = combined;
+    renderCombinedGradesTable(combined);
+    setGradesStatus(`${combined.length} Studierende kombiniert.`);
+
+    // Enable download button
+    if (els.btnDownloadGrades) els.btnDownloadGrades.disabled = false;
+  }
+
+  function renderCombinedGradesTable(rows) {
+    if (!els.gradesTableBody) return;
+    els.gradesTableBody.innerHTML = '';
+
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+
+      const cells = [
+        r.student_name,
+        r.question_count,
+        r.avg_difficultylevel,
+        r.avg_rate,
+        r.total_comments,
+        r.published_question_points,
+        r.rating_points,
+        r.correct_answers_points,
+        r.false_answers_points
+      ];
+
+      cells.forEach(val => {
+        const td = document.createElement('td');
+        if (val == null || val === '') {
+          td.innerHTML = '<span class="missing">MISSING</span>';
+        } else {
+          td.textContent = val;
+        }
+        tr.appendChild(td);
+      });
+
+      els.gradesTableBody.appendChild(tr);
+    });
+  }
+
+  function downloadCombinedGradesExcel() {
+    if (!Array.isArray(combinedGradesData) || !combinedGradesData.length) {
+      setGradesStatus('Keine Daten zum Exportieren. Bitte zuerst Bewertungen generieren.');
+      return;
+    }
+
+    const data = combinedGradesData.map(r => ({
+      student_name: r.student_name,
+      question_count: r.question_count ?? 'MISSING',
+      avg_difficultylevel: r.avg_difficultylevel ?? 'MISSING',
+      avg_rate: r.avg_rate ?? 'MISSING',
+      total_comments: r.total_comments ?? 'MISSING',
+      published_question_points: r.published_question_points ?? 'MISSING',
+      rating_points: r.rating_points ?? 'MISSING',
+      correct_answers_points: r.correct_answers_points ?? 'MISSING',
+      false_answers_points: r.false_answers_points ?? 'MISSING'
+    }));
+
+    if (window.XLSX && XLSX.utils && XLSX.writeFile) {
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Bewertungen');
+      XLSX.writeFile(wb, '3PMo_Helper_Bewertungen.xlsx');
+      setGradesStatus(`Excel exportiert (${data.length} Zeilen).`);
+    } else {
+      const csv = toCSV(data);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '3PMo_Helper_Bewertungen.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setGradesStatus(`CSV exportiert (${data.length} Zeilen).`);
+    }
   }
 
   // --- Tabs ---
@@ -766,6 +949,10 @@
   if (els.btnParseRanking) els.btnParseRanking.addEventListener('click', parseRankingHTML);
   if (els.btnClearRanking) els.btnClearRanking.addEventListener('click', clearRanking);
   if (els.btnDownloadRanking) els.btnDownloadRanking.addEventListener('click', downloadRankingExcel);
+
+  // Grades events (Bereich 4)
+  if (els.btnGenerateGrades) els.btnGenerateGrades.addEventListener('click', generateCombinedGrades);
+  if (els.btnDownloadGrades) els.btnDownloadGrades.addEventListener('click', downloadCombinedGradesExcel);
 
   // Tabs
   if (els.tabSQ && els.tabAssign) {
