@@ -87,3 +87,59 @@ input[type="text"], input[type="number"], input[type="file"] {
 /* Summary sections */
 .summary-section { margin-top: 16px; }
 .summary-section h3 { margin: 8px 0; font-size: 1rem; color: var(--text); }
+
+/* Wizard sections */
+.wizard-section {
+  margin-bottom: 32px;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.wizard-section h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.25rem;
+  color: var(--primary);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+.wizard-section ol {
+  margin: 8px 0;
+  padding-left: 24px;
+  color: var(--text);
+}
+.wizard-section ol li {
+  margin-bottom: 8px;
+}
+
+/* Styling für alle textareas (nicht nur htmlInput) */
+textarea {
+  width: 100%;
+  min-height: 260px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0b1220;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Tables in wizard sections */
+#previewTableRanking, #gradesTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+#previewTableRanking th, #previewTableRanking td,
+#gradesTable th, #gradesTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+#previewTableRanking thead th, #gradesTable thead th {
+  position: sticky;
+  top: 0;
+  background: #0b1220;
+}
+#previewTableRanking tbody tr:hover, #gradesTable tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
