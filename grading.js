@@ -31,15 +31,20 @@ function calculateAutomaticGrade(data) {
   }
 
   // Bewertung_FrageBewertung
-  // Based on rating points per published question, normalized to 0-5 scale
+  // Based on rating points per published question, normalized to 2-5 scale
+  // Rating ≤ 2 = 0%, Rating = 5 = 100%, linear interpolation between
   let scoreQuestionRating = 0;
   const publishedPts = data.published_question_points ?? 0;
   const ratingPts = data.rating_points ?? 0;
   if (publishedPts > 0 && ratingPts != null) {
     const avgRating = ratingPts / publishedPts;
-    // Normalize to 0-5 scale (5 = 100%)
-    scoreQuestionRating = (avgRating / 5) * 100;
-    scoreQuestionRating = Math.min(100, Math.max(0, scoreQuestionRating));
+    // Normalize to 2-5 scale: (avgRating - 2) / (5 - 2) * 100
+    if (avgRating <= 2) {
+      scoreQuestionRating = 0;
+    } else {
+      scoreQuestionRating = ((avgRating - 2) / 3) * 100;
+      scoreQuestionRating = Math.min(100, Math.max(0, scoreQuestionRating));
+    }
   }
 
   // Bewertung_FragenBeantwortung
@@ -78,7 +83,12 @@ function getGradeBreakdown(data) {
   const ratingPts = data.rating_points ?? 0;
   if (publishedPts > 0 && ratingPts != null) {
     const avgRating = ratingPts / publishedPts;
-    scoreQuestionRating = Math.min(100, Math.max(0, (avgRating / 5) * 100));
+    // Normalize to 2-5 scale
+    if (avgRating <= 2) {
+      scoreQuestionRating = 0;
+    } else {
+      scoreQuestionRating = Math.min(100, Math.max(0, ((avgRating - 2) / 3) * 100));
+    }
   }
 
   let scoreQuestionAnswered = 0;
