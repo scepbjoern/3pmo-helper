@@ -21,8 +21,10 @@
     btnParseRanking: $('#btnParseRanking'),
     btnClearRanking: $('#btnClearRanking'),
     btnDownloadRanking: $('#btnDownloadRanking'),
+    btnClearSavedRankingHtml: $('#btnClearSavedRankingHtml'),
     statusRanking: $('#statusRanking'),
     rankingTableBody: $('#previewTableRanking tbody'),
+    btnClearSavedHtml: $('#btnClearSavedHtml'),
     // Grades UI (Bereich 4)
     btnGenerateGrades: $('#btnGenerateGrades'),
     btnDownloadGrades: $('#btnDownloadGrades'),
@@ -147,10 +149,18 @@
   }
 
   function parseHTML() {
-    const html = els.input.value;
+    let html = els.input.value;
+    
+    // If no HTML in textarea, try loading from storage
     if (!html || !html.trim()) {
-      setStatus('Bitte HTML einfügen.');
-      return;
+      const savedHtml = loadHtmlFromStorage('sq');
+      if (savedHtml) {
+        html = savedHtml;
+        setStatus('Verwende gespeicherte HTML-Daten...');
+      } else {
+        setStatus('Bitte HTML einfügen.');
+        return;
+      }
     }
 
     let doc;
@@ -234,6 +244,11 @@
     renderTable(results);
     setStatus(results.length ? `${results.length} Zeilen extrahiert.` : 'Keine passenden Daten gefunden.');
     updateGradesButtonState();
+    
+    // Save HTML to localStorage (only if it came from textarea, not from storage)
+    if (els.input.value) {
+      saveHtmlToStorage(html, 'sq');
+    }
     
     // Clear input to improve performance
     els.input.value = '';
@@ -325,8 +340,19 @@
   }
 
   function parseRankingHTML() {
-    const html = els.inputRanking && els.inputRanking.value;
-    if (!html || !String(html).trim()) { setRankingStatus('Bitte HTML einfügen.'); return; }
+    let html = els.inputRanking && els.inputRanking.value;
+    
+    // If no HTML in textarea, try loading from storage
+    if (!html || !String(html).trim()) {
+      const savedHtml = loadHtmlFromStorage('ranking');
+      if (savedHtml) {
+        html = savedHtml;
+        setRankingStatus('Verwende gespeicherte HTML-Daten...');
+      } else {
+        setRankingStatus('Bitte HTML einfügen.');
+        return;
+      }
+    }
 
     let doc;
     try {
@@ -377,12 +403,16 @@
     setRankingStatus(results.length ? `${results.length} Zeilen extrahiert.` : 'Keine passenden Daten gefunden.');
     updateGradesButtonState();
     
+    // Save HTML to localStorage (only if it came from textarea, not from storage)
+    if (els.inputRanking.value) {
+      saveHtmlToStorage(html, 'ranking');
+    }
+    
     // Clear input to improve performance
-    if (els.inputRanking) els.inputRanking.value = '';
+    els.inputRanking.value = '';
   }
 
   function renderRankingTable(rows) {
-    if (!els.rankingTableBody) return;
     els.rankingTableBody.innerHTML = '';
     const fragment = document.createDocumentFragment();
     rows.forEach(r => {
@@ -995,6 +1025,80 @@
     });
   }
 
+  // --- HTML Storage Functions ---
+  function saveHtmlToStorage(html, type) {
+    if (!currentTestName || !html) return;
+    const key = `3pmo_html_${type}_${currentTestName}`;
+    localStorage.setItem(key, html);
+    
+    // Show delete button
+    if (type === 'sq' && els.btnClearSavedHtml) {
+      els.btnClearSavedHtml.style.display = '';
+    } else if (type === 'ranking' && els.btnClearSavedRankingHtml) {
+      els.btnClearSavedRankingHtml.style.display = '';
+    }
+  }
+  
+  function loadHtmlFromStorage(type) {
+    if (!currentTestName) return null;
+    const key = `3pmo_html_${type}_${currentTestName}`;
+    const html = localStorage.getItem(key);
+    
+    // Show delete button if data exists
+    if (html) {
+      if (type === 'sq' && els.btnClearSavedHtml) {
+        els.btnClearSavedHtml.style.display = '';
+      } else if (type === 'ranking' && els.btnClearSavedRankingHtml) {
+        els.btnClearSavedRankingHtml.style.display = '';
+      }
+    }
+    
+    return html;
+  }
+  
+  function clearSavedHtml(type) {
+    if (!currentTestName) return;
+    const key = `3pmo_html_${type}_${currentTestName}`;
+    localStorage.removeItem(key);
+    
+    // Hide delete button and clear any data
+    if (type === 'sq') {
+      if (els.btnClearSavedHtml) els.btnClearSavedHtml.style.display = 'none';
+      if (els.input) els.input.value = '';
+      extractedRows = [];
+      if (els.tableBody) els.tableBody.innerHTML = '';
+      setStatus('Gespeicherte HTML-Daten gelöscht.');
+      updateGradesButtonState();
+    } else if (type === 'ranking') {
+      if (els.btnClearSavedRankingHtml) els.btnClearSavedRankingHtml.style.display = 'none';
+      if (els.inputRanking) els.inputRanking.value = '';
+      rankingRows = [];
+      if (els.rankingTableBody) els.rankingTableBody.innerHTML = '';
+      setRankingStatus('Gespeicherte HTML-Daten gelöscht.');
+      updateGradesButtonState();
+    }
+  }
+  
+  function loadHtmlForCurrentTest() {
+    if (!currentTestName) return;
+    
+    // Check if SQ HTML exists (but don't load into textarea)
+    const sqHtml = loadHtmlFromStorage('sq');
+    if (sqHtml) {
+      // Show delete button and status
+      if (els.btnClearSavedHtml) els.btnClearSavedHtml.style.display = '';
+      setStatus(`✓ Gespeicherte HTML-Daten vorhanden (${(sqHtml.length / 1024).toFixed(1)} KB).`);
+    }
+    
+    // Check if Ranking HTML exists (but don't load into textarea)
+    const rankingHtml = loadHtmlFromStorage('ranking');
+    if (rankingHtml) {
+      // Show delete button and status
+      if (els.btnClearSavedRankingHtml) els.btnClearSavedRankingHtml.style.display = '';
+      setRankingStatus(`✓ Gespeicherte HTML-Daten vorhanden (${(rankingHtml.length / 1024).toFixed(1)} KB).`);
+    }
+  }
+
   // --- Test management ---
   function createNewTest() {
     const testName = els.testNameInput && els.testNameInput.value.trim();
@@ -1006,6 +1110,10 @@
     setCurrentTestName(testName);
     setTestStatus(`Test "${testName}" erstellt.`);
     els.testNameInput.value = testName;
+    
+    // Load HTML for this test
+    loadHtmlForCurrentTest();
+    loadHelperTablesFromStorage();
   }
 
   function loadExistingTest() {
@@ -1022,8 +1130,13 @@
     }
     
     currentTestName = testName;
+    setCurrentTestName(testName);
     applyManualGradesFromStorage(data);
     setTestStatus(`Test "${testName}" geladen.`);
+    
+    // Load HTML for this test
+    loadHtmlForCurrentTest();
+    loadHelperTablesFromStorage();
   }
 
   function applyManualGradesFromStorage(data) {
@@ -1704,9 +1817,12 @@
   if (els.btnParse) els.btnParse.addEventListener('click', parseHTML);
   if (els.btnClear) els.btnClear.addEventListener('click', clearAll);
   if (els.btnDownload) els.btnDownload.addEventListener('click', downloadExcel);
+  if (els.btnClearSavedHtml) els.btnClearSavedHtml.addEventListener('click', () => clearSavedHtml('sq'));
 
   // Ranking events
   if (els.btnParseRanking) els.btnParseRanking.addEventListener('click', parseRankingHTML);
+  if (els.btnClearRanking) els.btnClearRanking.addEventListener('click', clearRanking);
+  if (els.btnClearSavedRankingHtml) els.btnClearSavedRankingHtml.addEventListener('click', () => clearSavedHtml('ranking'));
   if (els.btnDownloadRanking) els.btnDownloadRanking.addEventListener('click', downloadRankingExcel);
 
   // Grades events (Bereich 4)
@@ -1778,6 +1894,9 @@
     els.testNameInput.value = lastTest;
     currentTestName = lastTest;
     setTestStatus(`Aktiver Test: "${lastTest}"`);
+    
+    // Load HTML for current test
+    loadHtmlForCurrentTest();
   }
   
   // Load helper tables from storage
