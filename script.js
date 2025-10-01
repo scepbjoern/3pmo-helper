@@ -832,8 +832,8 @@
         { val: r.justification, key: 'justification' },
         { val: publishedDisplay, key: 'published_question_points', sortVal: r.published_question_points },
         { val: ratingDisplay, key: 'rating_points', sortVal: r.rating_points, rawVal: r.rating_points },
-        { val: r.total_comments, key: 'total_comments' },
-        { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
+        { val: r.total_comments != null ? r.total_comments : '-', key: 'total_comments' },
+        { val: r.avg_difficultylevel != null ? r.avg_difficultylevel : '-', key: 'avg_difficultylevel' },
         { val: wrongBlockDisplay, key: 'wrong_block', rawVal: r.wrong_block },
         { val: answersDisplay, key: 'total_answers_points', sortVal: r.total_answers_points, hasMoreWrong: hasMoreWrongThanCorrect }
       ];
