@@ -253,8 +253,8 @@ textarea {
   font-size: 0.85em;
 }
 
-#gradesTable td[data-field="justification"] .editable-cell,
-#gradesTable td:nth-child(6) {
+/* Begründung column - smaller font */
+#gradesTable td:nth-child(5) {
   font-size: 0.75em;
 }
 

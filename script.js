@@ -733,13 +733,20 @@
         ? `${r.published_question_points}${r.question_count != null ? ' (' + r.question_count + ')' : ''}`
         : '';
       
-      // 2. Punkte Sterne (Ø Bewertung)
+      // 2. Punkte Sterne (Ø Bewertung) - compare with 2 decimals
       const ratingDisplay = (() => {
         if (r.rating_points == null) return '';
-        if (r.avg_rate != null && r.avg_rate !== r.rating_points) {
-          return `${r.rating_points} (${r.avg_rate})`;
+        const ratingPts = parseFloat(r.rating_points);
+        const avgRate = r.avg_rate != null ? parseFloat(r.avg_rate) : null;
+        
+        // Format to 2 decimals for comparison
+        const ratingStr = ratingPts.toFixed(2);
+        const avgRateStr = avgRate != null ? avgRate.toFixed(2) : null;
+        
+        if (avgRateStr != null && ratingStr !== avgRateStr) {
+          return `${ratingStr} (${avgRateStr})`;
         }
-        return String(r.rating_points);
+        return ratingStr;
       })();
       
       // 3. Punkte Antworten: Gesamt (R: richtig / F: falsch)
@@ -749,6 +756,9 @@
         const wrong = r.false_answers_points ?? 0;
         return `${r.total_answers_points} (R: ${correct} / F: ${wrong})`;
       })();
+      
+      // 4. Wrong block display: "YES" or "-"
+      const wrongBlockDisplay = r.wrong_block === 'YES' ? 'YES' : '-';
 
       const cells = [
         { val: r.student_name, key: 'student_name' },
@@ -756,11 +766,11 @@
         { val: r.manual_grade, key: 'manual_grade' },
         { val: r.justification, key: 'justification' },
         { val: publishedDisplay, key: 'published_question_points', sortVal: r.published_question_points },
-        { val: ratingDisplay, key: 'rating_points', sortVal: r.rating_points },
-        { val: answersDisplay, key: 'total_answers_points', sortVal: r.total_answers_points },
+        { val: ratingDisplay, key: 'rating_points', sortVal: r.rating_points, rawVal: r.rating_points },
         { val: r.total_comments, key: 'total_comments' },
         { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
-        { val: r.wrong_block, key: 'wrong_block' }
+        { val: wrongBlockDisplay, key: 'wrong_block', rawVal: r.wrong_block },
+        { val: answersDisplay, key: 'total_answers_points', sortVal: r.total_answers_points }
       ];
 
       const reviewFlags = r.reviewFlags || [];
@@ -798,9 +808,22 @@
           } else if (cell.key === 'automatic_grade' && cell.val != null) {
             td.innerHTML = `<strong>${cell.val}%</strong>`;
           }
-          // Wrong block - show YES in red
-          else if (cell.key === 'wrong_block' && cell.val === 'YES') {
-            td.innerHTML = `<span class="review-required">YES</span>`;
+          // Rating points - highlight if < 4
+          else if (cell.key === 'rating_points') {
+            const rawRating = cell.rawVal != null ? parseFloat(cell.rawVal) : null;
+            if (isFlagged || (rawRating != null && rawRating < 4)) {
+              td.innerHTML = `<span class="review-required">${escapeHtml(String(cell.val))}</span>`;
+            } else {
+              td.textContent = cell.val;
+            }
+          }
+          // Wrong block - show YES in red, otherwise just "-"
+          else if (cell.key === 'wrong_block') {
+            if (cell.rawVal === 'YES') {
+              td.innerHTML = `<span class="review-required">YES</span>`;
+            } else {
+              td.textContent = '-';
+            }
           }
           // Mark flagged fields in red
           else if (isFlagged) {
