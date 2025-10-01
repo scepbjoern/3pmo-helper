@@ -586,6 +586,10 @@
     if (els.tableBody) els.tableBody.innerHTML = '';
     if (els.rankingTableBody) els.rankingTableBody.innerHTML = '';
     
+    // Clear the data arrays to free memory
+    extractedRows = [];
+    rankingRows = [];
+    
     // Collapse the details elements
     const bereich2 = document.querySelector('details:has(#htmlInput)');
     const bereich3 = document.querySelector('details:has(#htmlInputRanking)');
