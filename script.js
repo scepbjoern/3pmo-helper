@@ -646,6 +646,7 @@
         total_answers_points: totalAnswersPoints,
         automatic_grade: null,
         manual_grade: null,
+        total_grade: null,
         justification: '',
         wrong_block: ''
       };
@@ -655,6 +656,9 @@
       
       // Generate automatic justification for deductions
       row.justification = generateAutomaticJustification(row);
+      
+      // Calculate total grade (automatic + manual delta)
+      row.total_grade = row.automatic_grade;
 
       combined.push(row);
     }
@@ -827,6 +831,7 @@
 
       const cells = [
         { val: r.student_name, key: 'student_name' },
+        { val: r.total_grade, key: 'total_grade' },
         { val: r.automatic_grade, key: 'automatic_grade' },
         { val: r.manual_grade, key: 'manual_grade' },
         { val: r.justification, key: 'justification' },
@@ -870,8 +875,10 @@
             } else {
               td.textContent = cell.val;
             }
-          } else if (cell.key === 'automatic_grade' && cell.val != null) {
+          } else if (cell.key === 'total_grade' && cell.val != null) {
             td.innerHTML = `<strong>${cell.val}%</strong>`;
+          } else if (cell.key === 'automatic_grade' && cell.val != null) {
+            td.textContent = `${cell.val}%`;
           }
           // Rating points - highlight if < 4
           else if (cell.key === 'rating_points') {
@@ -996,11 +1003,11 @@
       return;
     }
     
-    // If manual_grade field: format as percentage if it's a number
+    // If manual_grade field: format as percentage if it's a number and recalculate total
     if (field === 'manual_grade' && value) {
       // Remove existing % if present
       value = value.replace('%', '').trim();
-      // Check if it's a valid number
+      // Check if it's a valid number (can be negative)
       const numValue = parseFloat(value);
       if (!isNaN(numValue)) {
         value = `${numValue}%`;
@@ -1013,6 +1020,13 @@
     if (student) {
       student[field] = value;
       
+      // If manual_grade changed, recalculate total_grade
+      if (field === 'manual_grade') {
+        recalculateTotalGrade(student);
+        // Re-render the row to show updated total_grade
+        renderCombinedGradesTable(combinedGradesData);
+      }
+      
       // Debounced save - wait 500ms after last edit
       clearTimeout(saveDebounceTimer);
       saveDebounceTimer = setTimeout(() => {
@@ -1020,6 +1034,22 @@
         setGradesStatus(`Änderung für ${studentName} gespeichert.`);
       }, 500);
     }
+  }
+  
+  function recalculateTotalGrade(student) {
+    const automaticGrade = student.automatic_grade ?? 0;
+    let manualDelta = 0;
+    
+    if (student.manual_grade) {
+      const manualStr = String(student.manual_grade).replace('%', '').trim();
+      const manualNum = parseFloat(manualStr);
+      if (!isNaN(manualNum)) {
+        manualDelta = manualNum;
+      }
+    }
+    
+    // Total = automatic + manual delta, capped at 0-100
+    student.total_grade = Math.max(0, Math.min(100, automaticGrade + manualDelta));
   }
 
   // --- Manual review checkbox ---
@@ -1264,6 +1294,8 @@
         row.manual_grade = stored.manual_grade || null;
         row.justification = stored.justification || '';
         row.requiresManualReview = stored.requiresManualReview || false;
+        // Recalculate total_grade based on manual delta
+        recalculateTotalGrade(row);
       }
     });
     
