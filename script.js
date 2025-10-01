@@ -544,7 +544,7 @@
       const row = {
         student_name: displayName,
         // From Bereich 2 (StudentQuiz)
-        question_name: sqRow ? sqRow.questionname : null,
+        question_name: sqData.length > 0 ? sqData[0].questionname : null,
         question_count: questionCount > 0 ? questionCount : null,
         avg_difficultylevel: avgDifficulty,
         avg_rate: avgRate,
