@@ -60,25 +60,6 @@
               </ul>
             </details>
           </div>
-        </div>
-      </details>
-
-      <!-- Bereich 2: StudentQuiz-Tabelle extrahieren -->
-      <details class="wizard-section" open>
-        <summary><h2>2. StudentQuiz-Tabelle extrahieren</h2></summary>
-        <div class="wizard-content">
-          <p class="hint">Fügen Sie unten HTML mit der Tabelle aus dem Reiter "StudentQuiz" einer Moodle-Aktivität "StudentQuiz" ein. Extrahiert werden: <strong>questionname</strong>, <strong>creatorname</strong>, <strong>difficultylevel</strong>, <strong>rate</strong>, <strong>comments</strong>. Danach können Sie die Daten als Excel herunterladen.</p>
-
-          <label for="htmlInput" class="label">HTML-Eingabe</label>
-          <textarea id="htmlInput" placeholder="Hier HTML-Code einfügen..."></textarea>
-
-          <div class="buttons">
-            <button id="btnParse" type="button" class="primary">Extrahieren & Vorschau</button>
-            <button id="btnClear" type="button" class="secondary">Leeren</button>
-            <button id="btnDownload" type="button" class="success">Als Excel herunterladen</button>
-          </div>
-
-          <div id="status" class="status" role="status" aria-live="polite"></div>
 
           <div class="helper-tables" style="margin-top: 24px;">
             <h3>Hilfstabellen für Validierung</h3>
@@ -103,6 +84,25 @@
               <div id="statusAssignment" class="status" style="margin-top: 8px;"></div>
             </div>
           </div>
+        </div>
+      </details>
+
+      <!-- Bereich 2: StudentQuiz-Tabelle extrahieren -->
+      <details class="wizard-section" open>
+        <summary><h2>2. StudentQuiz-Tabelle extrahieren</h2></summary>
+        <div class="wizard-content">
+          <p class="hint">Fügen Sie unten HTML mit der Tabelle aus dem Reiter "StudentQuiz" einer Moodle-Aktivität "StudentQuiz" ein. Extrahiert werden: <strong>questionname</strong>, <strong>creatorname</strong>, <strong>difficultylevel</strong>, <strong>rate</strong>, <strong>comments</strong>. Danach können Sie die Daten als Excel herunterladen.</p>
+
+          <label for="htmlInput" class="label">HTML-Eingabe</label>
+          <textarea id="htmlInput" placeholder="Hier HTML-Code einfügen..."></textarea>
+
+          <div class="buttons">
+            <button id="btnParse" type="button" class="primary">Extrahieren & Vorschau</button>
+            <button id="btnClear" type="button" class="secondary">Leeren</button>
+            <button id="btnDownload" type="button" class="success">Als Excel herunterladen</button>
+          </div>
+
+          <div id="status" class="status" role="status" aria-live="polite"></div>
 
           <div class="table-wrapper">
             <table id="previewTable">
