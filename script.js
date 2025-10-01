@@ -593,23 +593,29 @@
 
       const cells = [
         { val: r.student_name, key: 'student_name' },
-        { val: r.question_count, key: 'question_count' },
-        { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
-        { val: r.avg_rate, key: 'avg_rate' },
-        { val: r.total_comments, key: 'total_comments' },
-        { val: r.published_question_points, key: 'published_question_points' },
-        { val: r.rating_points, key: 'rating_points' },
-        { val: r.correct_answers_points, key: 'correct_answers_points' },
-        { val: r.false_answers_points, key: 'false_answers_points' },
-        { val: r.total_answers_points, key: 'total_answers_points' },
         { val: r.automatic_grade, key: 'automatic_grade' },
         { val: r.manual_grade, key: 'manual_grade' },
-        { val: r.justification, key: 'justification' }
+        { val: r.justification, key: 'justification' },
+        { val: r.question_count, key: 'question_count' },
+        { val: r.rating_points, key: 'rating_points' },
+        { val: r.published_question_points, key: 'published_question_points' },
+        { val: r.total_answers_points, key: 'total_answers_points' },
+        { val: r.total_comments, key: 'total_comments' },
+        { val: r.avg_rate, key: 'avg_rate' },
+        { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
+        { val: r.correct_answers_points, key: 'correct_answers_points' },
+        { val: r.false_answers_points, key: 'false_answers_points' }
       ];
 
       cells.forEach(cell => {
         const td = document.createElement('td');
-        if (cell.val == null || cell.val === '') {
+        
+        // Handle editable cells first (manual_grade and justification)
+        if (cell.key === 'manual_grade') {
+          td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="manual_grade" data-placeholder="Klicken zum Bearbeiten">${cell.val || ''}</div>`;
+        } else if (cell.key === 'justification') {
+          td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="Klicken zum Bearbeiten">${cell.val || ''}</div>`;
+        } else if (cell.val == null || cell.val === '') {
           td.innerHTML = '<span class="missing">MISSING</span>';
         } else {
           // Color coding for question_count
@@ -624,10 +630,6 @@
             }
           } else if (cell.key === 'automatic_grade' && cell.val != null) {
             td.innerHTML = `<strong>${cell.val}%</strong>`;
-          } else if (cell.key === 'manual_grade') {
-            td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="manual_grade" data-placeholder="Klicken zum Bearbeiten">${cell.val || ''}</div>`;
-          } else if (cell.key === 'justification') {
-            td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="Klicken zum Bearbeiten">${cell.val || ''}</div>`;
           } else {
             td.textContent = cell.val;
           }
@@ -660,18 +662,18 @@
 
     const data = combinedGradesData.map(r => ({
       student_name: r.student_name,
-      question_count: r.question_count ?? 'MISSING',
-      avg_difficultylevel: r.avg_difficultylevel ?? 'MISSING',
-      avg_rate: r.avg_rate ?? 'MISSING',
-      total_comments: r.total_comments ?? 'MISSING',
-      published_question_points: r.published_question_points ?? 'MISSING',
-      rating_points: r.rating_points ?? 'MISSING',
-      correct_answers_points: r.correct_answers_points ?? 'MISSING',
-      false_answers_points: r.false_answers_points ?? 'MISSING',
-      total_answers_points: r.total_answers_points ?? 'MISSING',
       automatic_grade: r.automatic_grade ?? 'MISSING',
       manual_grade: r.manual_grade ?? '',
-      justification: r.justification ?? ''
+      justification: r.justification ?? '',
+      question_count: r.question_count ?? 'MISSING',
+      rating_points: r.rating_points ?? 'MISSING',
+      published_question_points: r.published_question_points ?? 'MISSING',
+      total_answers_points: r.total_answers_points ?? 'MISSING',
+      total_comments: r.total_comments ?? 'MISSING',
+      avg_rate: r.avg_rate ?? 'MISSING',
+      avg_difficultylevel: r.avg_difficultylevel ?? 'MISSING',
+      correct_answers_points: r.correct_answers_points ?? 'MISSING',
+      false_answers_points: r.false_answers_points ?? 'MISSING'
     }));
 
     if (window.XLSX && XLSX.utils && XLSX.writeFile) {
