@@ -242,6 +242,12 @@ textarea {
   font-weight: bold;
 }
 
+/* Review required styling */
+.review-required {
+  color: #ef4444;
+  font-weight: bold;
+}
+
 /* Test management */
 .test-management {
   margin-top: 2rem;

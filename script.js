@@ -565,6 +565,9 @@
       }
     }
     
+    // Auto-select students for manual review based on criteria
+    autoSelectManualReview();
+    
     renderCombinedGradesTable(combined);
     setGradesStatus(`${combined.length} Studierende kombiniert.`);
 
@@ -586,6 +589,70 @@
     const bereich3 = document.querySelector('details:has(#htmlInputRanking)');
     if (bereich2) bereich2.open = false;
     if (bereich3) bereich3.open = false;
+  }
+
+  function autoSelectManualReview() {
+    if (!combinedGradesData || !combinedGradesData.length) return;
+    
+    combinedGradesData.forEach(student => {
+      // Skip if already has manual grade from storage
+      if (student.manual_grade) return;
+      
+      const flags = [];
+      
+      // Helper function to check if value is valid (not null, undefined, or empty string)
+      const isValid = (val) => val != null && val !== '';
+      
+      // Criterion 1: More than 1 question (only if value exists)
+      if (isValid(student.question_count)) {
+        const questionCount = parseFloat(student.question_count);
+        if (!isNaN(questionCount) && questionCount > 1) {
+          flags.push('question_count');
+        }
+      }
+      
+      // Criterion 2: Average rating < 4 (only if value exists and > 0)
+      if (isValid(student.avg_rate)) {
+        const avgRate = parseFloat(student.avg_rate);
+        if (!isNaN(avgRate) && avgRate > 0 && avgRate < 4) {
+          flags.push('avg_rate');
+        }
+      }
+      
+      // Criterion 3: Total answers points > 0 but < 5 (only if value exists)
+      if (isValid(student.total_answers_points)) {
+        const totalAnswersPoints = parseFloat(student.total_answers_points);
+        if (!isNaN(totalAnswersPoints) && totalAnswersPoints > 0 && totalAnswersPoints < 5) {
+          flags.push('total_answers_points');
+        }
+      }
+      
+      // Criterion 4: Total comments < 3 (only if value exists)
+      if (isValid(student.total_comments)) {
+        const totalComments = parseFloat(student.total_comments);
+        if (!isNaN(totalComments) && totalComments >= 0 && totalComments < 3) {
+          flags.push('total_comments');
+        }
+      }
+      
+      // Criterion 5: False answers > correct answers (only if both values exist)
+      if (isValid(student.correct_answers_points) && isValid(student.false_answers_points)) {
+        const correctPoints = parseFloat(student.correct_answers_points);
+        const falsePoints = parseFloat(student.false_answers_points);
+        if (!isNaN(correctPoints) && !isNaN(falsePoints) && falsePoints > correctPoints) {
+          flags.push('false_answers_points');
+          flags.push('correct_answers_points');
+        }
+      }
+      
+      // Mark for manual review if any criterion is met
+      if (flags.length > 0) {
+        student.requiresManualReview = true;
+        student.reviewFlags = flags; // Store which criteria triggered the review
+      } else {
+        student.reviewFlags = [];
+      }
+    });
   }
 
   function renderCombinedGradesTable(rows) {
@@ -625,8 +692,13 @@
         { val: r.false_answers_points, key: 'false_answers_points' }
       ];
 
+      const reviewFlags = r.reviewFlags || [];
+      
       cells.forEach(cell => {
         const td = document.createElement('td');
+        
+        // Check if this field is flagged for review
+        const isFlagged = reviewFlags.includes(cell.key);
         
         // Handle editable cells first (manual_grade and justification)
         if (cell.key === 'manual_grade') {
@@ -636,10 +708,16 @@
         } else if (cell.val == null || cell.val === '') {
           td.innerHTML = '<span class="missing">MISSING</span>';
         } else {
+          // Student name - mark red if requires manual review
+          if (cell.key === 'student_name' && r.requiresManualReview) {
+            td.innerHTML = `<span class="review-required">${escapeHtml(cell.val)}</span>`;
+          }
           // Color coding for question_count
-          if (cell.key === 'question_count') {
+          else if (cell.key === 'question_count') {
             const count = parseInt(cell.val, 10);
-            if (count > 1) {
+            if (isFlagged) {
+              td.innerHTML = `<span class="review-required">${cell.val}</span>`;
+            } else if (count > 1) {
               td.innerHTML = `<span class="highlight-violet">${cell.val}</span>`;
             } else if (count === 0) {
               td.innerHTML = `<span class="highlight-red">${cell.val}</span>`;
@@ -648,7 +726,12 @@
             }
           } else if (cell.key === 'automatic_grade' && cell.val != null) {
             td.innerHTML = `<strong>${cell.val}%</strong>`;
-          } else {
+          }
+          // Mark flagged fields in red
+          else if (isFlagged) {
+            td.innerHTML = `<span class="review-required">${escapeHtml(String(cell.val))}</span>`;
+          }
+          else {
             td.textContent = cell.val;
           }
         }
