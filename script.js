@@ -32,6 +32,15 @@
     statusGrades: $('#statusGrades'),
     gradesTableBody: $('#gradesTable tbody'),
 
+    // Test management UI
+    testNameInput: $('#testNameInput'),
+    btnNewTest: $('#btnNewTest'),
+    btnLoadTest: $('#btnLoadTest'),
+    btnSaveTest: $('#btnSaveTest'),
+    btnImportTest: $('#btnImportTest'),
+    testFileInput: $('#testFileInput'),
+    testStatus: $('#testStatus'),
+
     // Assignment UI
     studentsFile: $('#studentsFile'),
     testNumber: $('#testNumber'),
@@ -46,6 +55,7 @@
   let extractedRows = [];
   let rankingRows = [];
   let combinedGradesData = []; // Combined data from Bereich 2 & 3
+  let currentTestName = null;
   // Data for assignment page
   let studentsList = []; // [{Kuerzel, Klasse}]
   let assignRows = [];   // rows for preview/export
@@ -65,6 +75,10 @@
 
   function setGradesStatus(msg) {
     if (els.statusGrades) els.statusGrades.textContent = msg || '';
+  }
+
+  function setTestStatus(msg) {
+    if (els.testStatus) els.testStatus.textContent = msg || '';
   }
 
   async function insertSample() {
@@ -611,9 +625,9 @@
           } else if (cell.key === 'automatic_grade' && cell.val != null) {
             td.innerHTML = `<strong>${cell.val}%</strong>`;
           } else if (cell.key === 'manual_grade') {
-            td.textContent = cell.val || '';
+            td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="manual_grade" data-placeholder="Klicken zum Bearbeiten">${cell.val || ''}</div>`;
           } else if (cell.key === 'justification') {
-            td.textContent = cell.val || '';
+            td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="Klicken zum Bearbeiten">${cell.val || ''}</div>`;
           } else {
             td.textContent = cell.val;
           }
@@ -625,6 +639,17 @@
     });
     
     els.gradesTableBody.appendChild(fragment);
+    
+    // Attach listeners for editable cells
+    attachEditableListeners();
+    
+    // Load manual grades if test is active
+    if (currentTestName) {
+      const data = loadTestData(currentTestName);
+      if (data) {
+        applyManualGradesFromStorage(data);
+      }
+    }
   }
 
   function downloadCombinedGradesExcel() {
@@ -668,6 +693,156 @@
       URL.revokeObjectURL(url);
       setGradesStatus(`CSV exportiert (${data.length} Zeilen).`);
     }
+  }
+
+  // --- Editable cells & persistence ---
+  function attachEditableListeners() {
+    const editableCells = document.querySelectorAll('.editable-cell');
+    editableCells.forEach(cell => {
+      cell.addEventListener('blur', handleCellEdit);
+      cell.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          cell.blur();
+        }
+      });
+    });
+  }
+
+  function handleCellEdit(e) {
+    const cell = e.target;
+    const studentName = cell.dataset.student;
+    const field = cell.dataset.field;
+    const value = cell.textContent.trim();
+    
+    if (!currentTestName) {
+      setGradesStatus('Bitte zuerst einen Test anlegen oder laden.');
+      return;
+    }
+    
+    // Update in combinedGradesData
+    const student = combinedGradesData.find(s => s.student_name === studentName);
+    if (student) {
+      student[field] = value;
+      saveCurrentTestData();
+      setGradesStatus(`Änderung für ${studentName} gespeichert.`);
+    }
+  }
+
+  // --- Test management ---
+  function createNewTest() {
+    const testName = els.testNameInput && els.testNameInput.value.trim();
+    if (!testName) {
+      setTestStatus('Bitte einen Testnamen eingeben.');
+      return;
+    }
+    currentTestName = testName;
+    setCurrentTestName(testName);
+    setTestStatus(`Test "${testName}" erstellt.`);
+    els.testNameInput.value = testName;
+  }
+
+  function loadExistingTest() {
+    const testName = els.testNameInput && els.testNameInput.value.trim();
+    if (!testName) {
+      setTestStatus('Bitte einen Testnamen eingeben.');
+      return;
+    }
+    
+    const data = loadTestData(testName);
+    if (!data) {
+      setTestStatus(`Test "${testName}" nicht gefunden.`);
+      return;
+    }
+    
+    currentTestName = testName;
+    applyManualGradesFromStorage(data);
+    setTestStatus(`Test "${testName}" geladen.`);
+  }
+
+  function applyManualGradesFromStorage(data) {
+    if (!data.manualGrades) return;
+    
+    // Apply to combinedGradesData
+    combinedGradesData.forEach(row => {
+      const stored = data.manualGrades[row.student_name];
+      if (stored) {
+        row.manual_grade = stored.manual_grade || null;
+        row.justification = stored.justification || '';
+      }
+    });
+    
+    // Re-render table
+    if (combinedGradesData.length > 0) {
+      renderCombinedGradesTable(combinedGradesData);
+    }
+  }
+
+  function saveCurrentTestData() {
+    if (!currentTestName) return;
+    
+    // Extract only manual grades
+    const manualGrades = {};
+    combinedGradesData.forEach(row => {
+      if (row.manual_grade || row.justification) {
+        manualGrades[row.student_name] = {
+          manual_grade: row.manual_grade || null,
+          justification: row.justification || ''
+        };
+      }
+    });
+    
+    saveTestData(currentTestName, { manualGrades });
+  }
+
+  function exportTest() {
+    if (!currentTestName) {
+      setTestStatus('Bitte zuerst einen Test anlegen oder laden.');
+      return;
+    }
+    
+    const manualGrades = {};
+    combinedGradesData.forEach(row => {
+      if (row.manual_grade || row.justification) {
+        manualGrades[row.student_name] = {
+          manual_grade: row.manual_grade || null,
+          justification: row.justification || ''
+        };
+      }
+    });
+    
+    exportTestDataAsJSON(currentTestName, { manualGrades });
+    setTestStatus(`Test "${currentTestName}" exportiert.`);
+  }
+
+  async function importTest() {
+    if (!els.testFileInput) return;
+    els.testFileInput.click();
+  }
+
+  async function handleTestFileImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      const imported = await importTestDataFromJSON(file);
+      currentTestName = imported.testName;
+      setCurrentTestName(imported.testName);
+      els.testNameInput.value = imported.testName;
+      
+      // Save to LocalStorage
+      saveTestData(imported.testName, imported.data);
+      
+      // Apply to current data
+      applyManualGradesFromStorage(imported.data);
+      
+      setTestStatus(`Test "${imported.testName}" importiert.`);
+    } catch (err) {
+      setTestStatus('Fehler beim Importieren: ' + err.message);
+    }
+    
+    // Reset file input
+    e.target.value = '';
   }
 
   // --- Tabs ---
@@ -1038,6 +1213,13 @@
   if (els.btnGenerateGrades) els.btnGenerateGrades.addEventListener('click', generateCombinedGrades);
   if (els.btnDownloadGrades) els.btnDownloadGrades.addEventListener('click', downloadCombinedGradesExcel);
 
+  // Test management events
+  if (els.btnNewTest) els.btnNewTest.addEventListener('click', createNewTest);
+  if (els.btnLoadTest) els.btnLoadTest.addEventListener('click', loadExistingTest);
+  if (els.btnSaveTest) els.btnSaveTest.addEventListener('click', exportTest);
+  if (els.btnImportTest) els.btnImportTest.addEventListener('click', importTest);
+  if (els.testFileInput) els.testFileInput.addEventListener('change', handleTestFileImport);
+
   // Tabs
   if (els.tabSQ && els.tabAssign) {
     els.tabSQ.addEventListener('click', () => showPage('sq'));
@@ -1053,5 +1235,13 @@
   }
   if (els.btnDownloadAssign) {
     els.btnDownloadAssign.addEventListener('click', downloadAssignmentExcel);
+  }
+
+  // Load current test on startup
+  const lastTest = getCurrentTestName();
+  if (lastTest && els.testNameInput) {
+    els.testNameInput.value = lastTest;
+    currentTestName = lastTest;
+    setTestStatus(`Aktiver Test: "${lastTest}"`);
   }
 })();
