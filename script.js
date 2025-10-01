@@ -581,6 +581,16 @@
 
     // Enable download button
     if (els.btnDownloadGrades) els.btnDownloadGrades.disabled = false;
+
+    // Clear and collapse Bereich 2 & 3 to save browser resources
+    if (els.tableBody) els.tableBody.innerHTML = '';
+    if (els.rankingTableBody) els.rankingTableBody.innerHTML = '';
+    
+    // Collapse the details elements
+    const bereich2 = document.querySelector('details:has(#htmlInput)');
+    const bereich3 = document.querySelector('details:has(#htmlInputRanking)');
+    if (bereich2) bereich2.open = false;
+    if (bereich3) bereich3.open = false;
   }
 
   function renderCombinedGradesTable(rows) {
