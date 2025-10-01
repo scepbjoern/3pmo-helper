@@ -941,21 +941,54 @@
       return;
     }
 
-    const data = combinedGradesData.map(r => ({
-      student_name: r.student_name,
-      automatic_grade: r.automatic_grade ?? 'MISSING',
-      manual_grade: r.manual_grade ?? '',
-      justification: r.justification ?? '',
-      question_count: r.question_count ?? 'MISSING',
-      rating_points: r.rating_points ?? 'MISSING',
-      published_question_points: r.published_question_points ?? 'MISSING',
-      total_answers_points: r.total_answers_points ?? 'MISSING',
-      total_comments: r.total_comments ?? 'MISSING',
-      avg_rate: r.avg_rate ?? 'MISSING',
-      avg_difficultylevel: r.avg_difficultylevel ?? 'MISSING',
-      correct_answers_points: r.correct_answers_points ?? 'MISSING',
-      false_answers_points: r.false_answers_points ?? 'MISSING'
-    }));
+    const data = combinedGradesData.map(r => {
+      // Format exactly like in the table
+      
+      // 1. Punkte veröffentlichte Fragen (Anzahl)
+      const publishedDisplay = r.published_question_points != null 
+        ? `${r.published_question_points}${r.question_count != null ? ' (' + r.question_count + ')' : ''}`
+        : '-';
+      
+      // 2. Punkte Sterne (Ø Bewertung)
+      const ratingDisplay = (() => {
+        if (r.rating_points == null) return '-';
+        const ratingPts = parseFloat(r.rating_points);
+        const avgRate = r.avg_rate != null ? parseFloat(r.avg_rate) : null;
+        
+        const ratingStr = ratingPts.toFixed(2);
+        const avgRateStr = avgRate != null ? avgRate.toFixed(2) : null;
+        
+        if (avgRateStr != null && ratingStr !== avgRateStr) {
+          return `${ratingStr} (${avgRateStr})`;
+        }
+        return ratingStr;
+      })();
+      
+      // 3. Punkte Antworten: Gesamt (R: richtig / F: falsch)
+      const answersDisplay = (() => {
+        if (r.total_answers_points == null) return '-';
+        const correct = r.correct_answers_points ?? 0;
+        const wrong = r.false_answers_points ?? 0;
+        return `${r.total_answers_points} (R: ${correct} / F: ${wrong})`;
+      })();
+      
+      // 4. Wrong block display
+      const wrongBlockDisplay = r.wrong_block === 'YES' ? 'YES' : '-';
+      
+      return {
+        'Student': r.student_name,
+        'Bew. tot.': r.total_grade != null ? `${r.total_grade}%` : '-',
+        'Bew. aut.': r.automatic_grade != null ? `${r.automatic_grade}%` : '-',
+        'Bew. man.': r.manual_grade ?? '',
+        'Begründung': r.justification ?? '',
+        'Punkte veröffentlichte Fragen': publishedDisplay,
+        'Punkte Sterne': ratingDisplay,
+        'Σ Kommentare': r.total_comments ?? '-',
+        'Ø Schwierigkeit': r.avg_difficultylevel ?? '-',
+        'Falscher Frageblock': wrongBlockDisplay,
+        'Punkte Antworten': answersDisplay
+      };
+    });
 
     if (window.XLSX && XLSX.utils && XLSX.writeFile) {
       const ws = XLSX.utils.json_to_sheet(data);

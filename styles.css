@@ -253,8 +253,8 @@ textarea {
   font-size: 0.85em;
 }
 
-/* Begründung column - smaller font */
-#gradesTable td:nth-child(5) {
+/* Begründung column - smaller font (6th column) */
+#gradesTable td:nth-child(6) {
   font-size: 0.75em;
 }
 
