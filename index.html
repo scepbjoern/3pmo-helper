@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
   <script src="vendor/xlsx.full.min.js"></script>
   <script src="grading.js"></script>
+  <script src="persistence.js"></script>
   <script defer src="script.js"></script>
 </head>
 <body>
@@ -20,17 +21,45 @@
 
     <section id="page-sq" class="page active" aria-labelledby="tabSQ">
       
-      <!-- Bereich 1: Übersicht -->
+      <!-- Bereich 1: Übersicht & Test-Verwaltung -->
       <details class="wizard-section" open>
-        <summary><h2>1. Übersicht</h2></summary>
+        <summary><h2>1. Übersicht & Test-Verwaltung</h2></summary>
         <div class="wizard-content">
           <p class="hint">Willkommen beim StudentQuiz-Bewertungs-Wizard. Folgen Sie diesen Schritten:</p>
           <ol>
-            <li><strong>StudentQuiz-Tabelle extrahieren:</strong> Kopieren Sie die HTML-Tabelle aus dem Reiter "StudentQuiz" der Moodle-Aktivität und extrahieren Sie die relevanten Fragendaten (questionname, creatorname, difficultylevel, rate, comments).</li>
-            <li><strong>Rangliste-Tabelle extrahieren:</strong> Kopieren Sie die HTML-Tabelle aus dem Reiter "Rangliste" der Moodle-Aktivität und extrahieren Sie die Studierendenleistungen (student_name, published_question_points, rating_points, correct_answers_points, false_answers_points).</li>
-            <li><strong>Bewertungen:</strong> Basierend auf den extrahierten Daten aus Bereich 1 und 2 wird automatisch eine Bewertung der Studierenden vorgenommen. Sie können die Bewertungen manuell anpassen und begründen.</li>
+            <li><strong>Test auswählen/anlegen:</strong> Wählen Sie einen bestehenden Test oder legen Sie einen neuen an.</li>
+            <li><strong>StudentQuiz-Tabelle extrahieren:</strong> Kopieren Sie die HTML-Tabelle aus dem Reiter "StudentQuiz" der Moodle-Aktivität und extrahieren Sie die relevanten Fragendaten.</li>
+            <li><strong>Rangliste-Tabelle extrahieren:</strong> Kopieren Sie die HTML-Tabelle aus dem Reiter "Rangliste" der Moodle-Aktivität und extrahieren Sie die Studierendenleistungen.</li>
+            <li><strong>Bewertungen:</strong> Automatische Bewertung wird berechnet. Sie können manuelle Anpassungen und Begründungen direkt in der Tabelle eingeben (werden automatisch gespeichert).</li>
             <li><strong>Export:</strong> Laden Sie die finalen Bewertungen als Excel-Datei herunter.</li>
           </ol>
+
+          <div class="test-management">
+            <h3>Test-Verwaltung</h3>
+            
+            <label for="testNameInput" class="label">Testname</label>
+            <input type="text" id="testNameInput" placeholder="z.B. Test 1, HS2024, etc." />
+            
+            <div class="buttons">
+              <button id="btnNewTest" type="button" class="primary">Neuer Test</button>
+              <button id="btnLoadTest" type="button">Test laden</button>
+              <button id="btnSaveTest" type="button" class="success">Test exportieren (JSON)</button>
+              <button id="btnImportTest" type="button">Test importieren (JSON)</button>
+            </div>
+            <input type="file" id="testFileInput" accept=".json" style="display: none;" />
+            
+            <div id="testStatus" class="status" role="status" aria-live="polite"></div>
+            
+            <details class="note">
+              <summary>Hinweis zur Datenspeicherung</summary>
+              <ul>
+                <li><strong>Automatisches Speichern:</strong> Änderungen an manuellen Bewertungen werden automatisch im Browser (LocalStorage) gespeichert.</li>
+                <li><strong>Test exportieren:</strong> Sichern Sie Ihre Daten als JSON-Datei auf Ihrer Festplatte.</li>
+                <li><strong>Test importieren:</strong> Laden Sie eine zuvor exportierte JSON-Datei.</li>
+                <li><strong>Mehrere Tests:</strong> Sie können verschiedene Tests parallel verwalten (z.B. "Test 1", "Test 2").</li>
+              </ul>
+            </details>
+          </div>
         </div>
       </details>
 

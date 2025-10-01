@@ -185,3 +185,49 @@ textarea {
   color: #ef4444;
   font-weight: bold;
 }
+
+/* Test management */
+.test-management {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.test-management h3 {
+  margin-bottom: 1rem;
+  color: var(--accent);
+}
+.test-management input[type="text"] {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #1a1f2e;
+  color: var(--text);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Editable cells */
+.editable-cell {
+  cursor: text;
+  min-height: 1.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+.editable-cell:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+.editable-cell:focus {
+  outline: none;
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--accent);
+}
+.editable-cell:empty:before {
+  content: attr(data-placeholder);
+  color: #6b7280;
+  font-style: italic;
+}
