@@ -35,6 +35,16 @@
     tableHeightSlider: $('#tableHeightSlider'),
     tableHeightValue: $('#tableHeightValue'),
     gradesTableWrapper: $('#gradesTableWrapper'),
+    
+    // Helper tables UI
+    studentHelperFile: $('#studentHelperFile'),
+    btnUploadStudentHelper: $('#btnUploadStudentHelper'),
+    btnClearStudentHelper: $('#btnClearStudentHelper'),
+    statusStudentHelper: $('#statusStudentHelper'),
+    assignmentFile: $('#assignmentFile'),
+    btnUploadAssignment: $('#btnUploadAssignment'),
+    btnClearAssignment: $('#btnClearAssignment'),
+    statusAssignment: $('#statusAssignment'),
 
     // Test management UI
     testNameInput: $('#testNameInput'),
@@ -64,6 +74,8 @@
   let currentSortColumn = 'student_name'; // Default sort column
   let currentSortOrder = 'asc'; // Default sort order
   let isFilterActive = false; // Track if manual review filter is active
+  let studentHelperData = []; // [{kuerzel, fullname}] - Global helper table
+  let assignmentData = []; // Current test assignment data
   // Data for assignment page
   let studentsList = []; // [{Kuerzel, Klasse}]
   let assignRows = [];   // rows for preview/export
@@ -532,6 +544,7 @@
       const row = {
         student_name: displayName,
         // From Bereich 2 (StudentQuiz)
+        question_name: sqRow ? sqRow.questionname : null,
         question_count: questionCount > 0 ? questionCount : null,
         avg_difficultylevel: avgDifficulty,
         avg_rate: avgRate,
@@ -544,7 +557,9 @@
         total_answers_points: totalAnswersPoints,
         automatic_grade: null,
         manual_grade: null,
-        justification: ''
+        justification: '',
+        wrong_block: '',
+        expected_responders: ''
       };
 
       // Calculate automatic grade
@@ -568,6 +583,9 @@
     
     // Auto-select students for manual review based on criteria
     autoSelectManualReview();
+    
+    // Validate assignments (wrong block, expected responders)
+    validateAssignments();
     
     renderCombinedGradesTable(combined);
     setGradesStatus(`${combined.length} Studierende kombiniert.`);
@@ -693,7 +711,9 @@
         { val: r.avg_rate, key: 'avg_rate' },
         { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
         { val: r.correct_answers_points, key: 'correct_answers_points' },
-        { val: r.false_answers_points, key: 'false_answers_points' }
+        { val: r.false_answers_points, key: 'false_answers_points' },
+        { val: r.wrong_block, key: 'wrong_block' },
+        { val: r.expected_responders, key: 'expected_responders' }
       ];
 
       const reviewFlags = r.reviewFlags || [];
@@ -730,6 +750,15 @@
             }
           } else if (cell.key === 'automatic_grade' && cell.val != null) {
             td.innerHTML = `<strong>${cell.val}%</strong>`;
+          }
+          // Wrong block - show YES in red
+          else if (cell.key === 'wrong_block' && cell.val === 'YES') {
+            td.innerHTML = `<span class="review-required">YES</span>`;
+          }
+          // Expected responders - preserve line breaks
+          else if (cell.key === 'expected_responders' && cell.val) {
+            td.innerHTML = escapeHtml(String(cell.val)).replace(/\n/g, '<br>');
+            td.style.whiteSpace = 'pre-wrap';
           }
           // Mark flagged fields in red
           else if (isFlagged) {
@@ -1441,6 +1470,272 @@
 <table id="categoryquestions" class="question-bank-table generaltable" data-defaultsort="{&quot;mod_studentquiz__question__bank__anonym_creator_name_column-timecreated&quot;:3,&quot;mod_studentquiz__question__bank__question_name_column&quot;:4}"><thead id="yui_3_18_1_1_1756465703414_173"><tr class="qbank-column-list" id="yui_3_18_1_1_1756465703414_172"><th class="header align-top checkbox" scope="col" data-pluginname="core_question\local\bank\checkbox_column" data-name="Alle auswählen" data-columnid="core_question\local\bank\checkbox_column-checkbox_column" style="width: 30px;" id="yui_3_18_1_1_1756465703414_171"> <div class="header-container" id="yui_3_18_1_1_1756465703414_170"> <div class="header-text" id="yui_3_18_1_1_1756465703414_169"> <span class="me-1" title="Fragen für Sammelaktion auswählen" id="yui_3_18_1_1_1756465703414_168"><div class="form-check" id="yui_3_18_1_1_1756465703414_167"> <input id="qbheadercheckbox" name="qbheadercheckbox" type="checkbox" class="" value="1" aria-labelledby="qbheadercheckbox-label" data-action="toggle" data-toggle="master" data-togglegroup="qbank" data-toggle-selectall="Alle auswählen" data-toggle-deselectall="Nichts auswählen"> <label id="qbheadercheckbox-label" for="qbheadercheckbox" class="form-check-label d-block pe-2 accesshide">Nichts auswählen</label> </div></span> </div> </div> </th><th class="header align-top qtype" scope="col" data-pluginname="qbank_viewquestiontype__question_type_column" data-name="T" data-columnid="qbank_viewquestiontype\question_type_column-question_type_column" style="width: 45px;"> <div class="header-container"> <div class="header-text"> </div> </div> <div class="sorters"> <a href="https://moodle.zhaw.ch/mod/studentquiz/view.php?cmid=1723409&amp;cat=519228%2C2302532&amp;id=1723409&amp;group=163617&amp;sortdata%5Bqbank_viewquestiontype__question_type_column%5D=4&amp;sortdata%5Bmod_studentquiz__question__bank__anonym_creator_name_column-timecreated%5D=3&amp;sortdata%5Bmod_studentquiz__question__bank__question_name_column%5D=4" data-sortname="qbank_viewquestiontype__question_type_column" data-sortorder="4" title="Sortierung nach Fragetyp aufsteigend"> T </a> </div> </th><th class="header align-top state" scope="col" data-pluginname="mod_studentquiz__question__bank__state_column" data-name="S" data-columnid="mod_studentquiz\question\bank\state_column-state_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> </div> </div> <div class="sorters"> <a href="https://moodle.zhaw.ch/mod/studentquiz/view.php?cmid=1723409&amp;cat=519228%2C2302532&amp;id=1723409&amp;group=163617&amp;sortdata%5Bmod_studentquiz__question__bank__state_column%5D=4&amp;sortdata%5Bmod_studentquiz__question__bank__anonym_creator_name_column-timecreated%5D=3&amp;sortdata%5Bmod_studentquiz__question__bank__question_name_column%5D=4" data-sortname="mod_studentquiz__question__bank__state_column" data-sortorder="4" title="Sortierung nach Status aufsteigend"> S </a> </div> </th><th class="header align-top state_pin" scope="col" data-pluginname="mod_studentquiz__question__bank__state_pin_column" data-name="" data-columnid="mod_studentquiz\question\bank\state_pin_column-state_pin_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> <span class="me-1"></span> </div> </div> </th><th class="header align-top questionname" scope="col" data-pluginname="mod_studentquiz__question__bank__question_name_column" data-name="Frage" data-columnid="mod_studentquiz\question\bank\question_name_column-question_name_column" style="width: 250px;"> <div class="header-container"> <div class="header-text"> </div> </div> <div class="sorters"> </div> </th><th class="header align-top pe-3 editmenu" scope="col" data-pluginname="mod_studentquiz__question__bank__sq_edit_menu_column" data-name="Aktionen" data-columnid="mod_studentquiz\question\bank\sq_edit_menu_column-sq_edit_menu_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> <span class="me-1">Aktionen</span> </div> </div> </th><th class="header align-top pe-3 questionversionnumber" scope="col" data-pluginname="qbank_history__version_number_column" data-name="Version" data-columnid="qbank_history\version_number_column-version_number_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> </div> </div> <div class="sorters"> </div> </th><th class="header align-top creatorname" scope="col" data-pluginname="mod_studentquiz__question__bank__anonym_creator_name_column" data-name="Erstellt von" data-columnid="mod_studentquiz\question\bank\anonym_creator_name_column-anonym_creator_name_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> <div class="title me-1">Erstellt von</div> </div> </div> <div class="sorters"> / / </div> </th><th class="header align-top tags" scope="col" data-pluginname="mod_studentquiz__question__bank__tag_column" data-name="Tags" data-columnid="mod_studentquiz\question\bank\tag_column-tag_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> </div> </div> <div class="sorters"> </div> </th><th class="header align-top attempts" scope="col" data-pluginname="mod_studentquiz__question__bank__attempts_column" data-name="Meine Versuche" data-columnid="mod_studentquiz\question\bank\attempts_column-attempts_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> <div class="title me-1">Meine Versuche</div> </div> </div> <div class="sorters"> / </div> </th><th class="header align-top difficultylevel" scope="col" data-pluginname="mod_studentquiz__question__bank__difficulty_level_column" data-name="Schwierigkeit" data-columnid="mod_studentquiz\question\bank\\difficulty_level_column-difficulty_level_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> <div class="title me-1">Schwierigkeit</div> </div> </div> <div class="sorters"> / </div> </th><th class="header align-top rates" scope="col" data-pluginname="mod_studentquiz__question__bank__rate_column" data-name="Bewertung" data-columnid="mod_studentquiz\question\bank\rate_column-rate_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> <div class="title me-1">Bewertung</div> </div> </div> <div class="sorters"> / </div> </th><th class="header align-top comment" scope="col" data-pluginname="mod_studentquiz__question__bank__comment_column" data-name="Kommentare" data-columnid="mod_studentquiz\question\bank\comment_column-comment_column" style="width: 120px;"> <div class="header-container"> <div class="header-text"> </div> </div> <div class="sorters"> </div> </th></tr></thead><tbody><tr class="r0"><td class="checkbox" data-columnid="core_question\local\bank\checkbox_column-checkbox_column"><input id="checkq20458800" name="q20458800" type="checkbox" value="1" data-action="toggle" data-toggle="slave" data-togglegroup="qbank"> <label for="checkq20458800" class="accesshide">Auswahl</label></td><td class="qtype" data-columnid="qbank_viewquestiontype\question_type_column-question_type_column"><img class="icon " title="Kprim (ETH)" alt="Kprim (ETH)" src="https://moodle.zhaw.ch/theme/image.php/boost_union/qtype_kprime/1756457962/icon"></td><td class="state" data-columnid="mod_studentquiz\question\bank\state_column-state_column"></td><td class="state_pin" data-columnid="mod_studentquiz\question\bank\state_pin_column-state_pin_column"></td><td class="questionname" data-columnid="mod_studentquiz\question\bank\question_name_column-question_name_column"><label for="checkq20458800">Frage 01, einfach</label></td><td class="pe-3 editmenu" data-columnid="mod_studentquiz\question\bank\sq_edit_menu_column-sq_edit_menu_column"><div class="action-menu moodle-actionmenu" id="action-menu-1" data-enhance="moodle-core-actionmenu"> <div class="menubar d-flex " id="action-menu-1-menubar"> <div class="action-menu-trigger"> <div class="dropdown"> <div class="dropdown-menu menu dropdown-menu-right" id="action-menu-1-menu" data-rel="menu-content" aria-labelledby="action-menu-toggle-1" role="menu"> </div> </div> </div> </div> </div></td><td class="pe-3 questionversionnumber" data-columnid="qbank_history\version_number_column-version_number_column">v1</td><td class="creatorname" data-columnid="mod_studentquiz\question\bank\anonym_creator_name_column-anonym_creator_name_column"><span></span><br><span class="date">25. August 2025, 14:29</span></td><td class="tags" data-columnid="mod_studentquiz\question\bank\tag_column-tag_column">n.a.</td><td class="attempts" data-columnid="mod_studentquiz\question\bank\attempts_column-attempts_column"><span class="pratice_info" tabindex="0" aria-label="Diese Frage wurde noch nie versucht.">n.a.&nbsp;|&nbsp;n.a.</span></td><td class="difficultylevel" data-columnid="mod_studentquiz\question\bank\\difficulty_level_column-difficulty_level_column"><span class="mod_studentquiz_difficulty" data-mydifficulty="0" title=""></span></td><td class="rates" data-columnid="mod_studentquiz\question\bank\rate_column-rate_column"><span class="mod_studentquiz_ratingbar" title="">n.a.</span></td><td class="comment" data-columnid="mod_studentquiz\question\bank\comment_column-comment_column"><span class="public-comment badge badge-secondary" title="Anzahl an öffentlichen Kommentaren. Ein blauer Hintergrund bedeutet, dass Sie mindest einen ungelesenen Kommentar haben."> n.a. <span class="sr-only">Öffentlich Kommentare</span> </span></td></tr><tr class="r1"><td class="checkbox" data-columnid="core_question\local\bank\checkbox_column-checkbox_column"><input id="checkq20451333" name="q20451333" type="checkbox" value="1" data-action="toggle" data-toggle="slave" data-togglegroup="qbank"> <label for="checkq20451333" class="accesshide">Auswahl</label></td><td class="qtype" data-columnid="qbank_viewquestiontype\question_type_column-question_type_column"><img class="icon " title="Kprim (ETH)" alt="Kprim (ETH)" src="https://moodle.zhaw.ch/theme/image.php/boost_union/qtype_kprime/1756457962/icon"></td><td class="state" data-columnid="mod_studentquiz\question\bank\state_column-state_column"></td><td class="state_pin" data-columnid="mod_studentquiz\question\bank\state_pin_column-state_pin_column"></td><td class="questionname" data-columnid="mod_studentquiz\question\bank\question_name_column-question_name_column"><label for="checkq20451333">Gitarren im Musikbusiness</label></td><td class="pe-3 editmenu" data-columnid="mod_studentquiz\question\bank\sq_edit_menu_column-sq_edit_menu_column"><div class="action-menu moodle-actionmenu" id="action-menu-2" data-enhance="moodle-core-actionmenu"> <div class="menubar d-flex " id="action-menu-2-menubar"> <div class="action-menu-trigger"> <div class="dropdown"> <div class="dropdown-menu menu dropdown-menu-right" id="action-menu-2-menu" data-rel="menu-content" aria-labelledby="action-menu-toggle-2" role="menu"> </div> </div> </div> </div> </div></td><td class="pe-3 questionversionnumber" data-columnid="qbank_history\version_number_column-version_number_column">v1</td><td class="creatorname" data-columnid="mod_studentquiz\question\bank\anonym_creator_name_column-anonym_creator_name_column"><span></span><br><span class="date">21. August 2025, 10:42</span></td><td class="tags" data-columnid="mod_studentquiz\question\bank\tag_column-tag_column">n.a.</td><td class="attempts" data-columnid="mod_studentquiz\question\bank\attempts_column-attempts_column"><span class="pratice_info" tabindex="0" aria-label="Beim letzten Versuch falsch">1&nbsp;|&nbsp;✗</span></td><td class="difficultylevel" data-columnid="mod_studentquiz\question\bank\\difficulty_level_column-difficulty_level_column"><span class="mod_studentquiz_difficulty" data-difficultylevel="0.78" data-mydifficulty="1.00" title="Community Schwierigkeit: 78% , Meine Schwierigkeit: 100%"></span></td><td class="rates" data-columnid="mod_studentquiz\question\bank\rate_column-rate_column"><span class="mod_studentquiz_ratingbar" data-rate="4.33" data-myrate="4" title="Community Bewertung: 4.33 , Meine Bewertung: 4"></span></td><td class="comment" data-columnid="mod_studentquiz\question\bank\comment_column-comment_column"><span class="public-comment badge badge-secondary" title="Anzahl an öffentlichen Kommentaren. Ein blauer Hintergrund bedeutet, dass Sie mindest einen ungelesenen Kommentar haben."> 2 <span class="sr-only">Öffentlich Kommentare</span> </span></td></tr><tr class="r0"><td class="checkbox" data-columnid="core_question\local\bank\checkbox_column-checkbox_column"><input id="checkq20450640" name="q20450640" type="checkbox" value="1" data-action="toggle" data-toggle="slave" data-togglegroup="qbank"> <label for="checkq20450640" class="accesshide">Auswahl</label></td><td class="qtype" data-columnid="qbank_viewquestiontype\question_type_column-question_type_column"><img class="icon " title="Kprim (ETH)" alt="Kprim (ETH)" src="https://moodle.zhaw.ch/theme/image.php/boost_union/qtype_kprime/1756457962/icon"></td><td class="state" data-columnid="mod_studentquiz\question\bank\state_column-state_column"></td><td class="state_pin" data-columnid="mod_studentquiz\question\bank\state_pin_column-state_pin_column"></td><td class="questionname" data-columnid="mod_studentquiz\question\bank\question_name_column-question_name_column"><label for="checkq20450640">IKEA</label></td><td class="pe-3 editmenu" data-columnid="mod_studentquiz\question\bank\sq_edit_menu_column-sq_edit_menu_column"><div class="action-menu moodle-actionmenu" id="action-menu-3" data-enhance="moodle-core-actionmenu"> <div class="menubar d-flex " id="action-menu-3-menubar"> <div class="action-menu-trigger"> <div class="dropdown"> <div class="dropdown-menu menu dropdown-menu-right" id="action-menu-3-menu" data-rel="menu-content" aria-labelledby="action-menu-toggle-3" role="menu"> </div> </div> </div> </div> </div></td><td class="pe-3 questionversionnumber" data-columnid="qbank_history\version_number_column-version_number_column">v1</td><td class="creatorname" data-columnid="mod_studentquiz\question\bank\anonym_creator_name_column-anonym_creator_name_column"><span></span><br><span class="date">20. August 2025, 15:20</span></td><td class="tags" data-columnid="mod_studentquiz\question\bank\tag_column-tag_column">n.a.</td><td class="attempts" data-columnid="mod_studentquiz\question\bank\attempts_column-attempts_column"><span class="pratice_info" tabindex="0" aria-label="Diese Frage wurde noch nie versucht.">n.a.&nbsp;|&nbsp;n.a.</span></td><td class="difficultylevel" data-columnid="mod_studentquiz\question\bank\\difficulty_level_column-difficulty_level_column"><span class="mod_studentquiz_difficulty" data-difficultylevel="1.00" data-mydifficulty="0" title="Community Schwierigkeit: 100% , Meine Schwierigkeit: n.a."></span></td><td class="rates" data-columnid="mod_studentquiz\question\bank\rate_column-rate_column"><span class="mod_studentquiz_ratingbar" data-rate="2.50" title="Community Bewertung: 2.5 , Meine Bewertung: n.a."></span></td><td class="comment" data-columnid="mod_studentquiz\question\bank\comment_column-comment_column"><span class="public-comment badge badge-primary" title="Anzahl an öffentlichen Kommentaren. Ein blauer Hintergrund bedeutet, dass Sie mindest einen ungelesenen Kommentar haben."> 1 <span class="sr-only">Öffentlich Kommentar(inklusive ungelesener)</span> </span></td></tr><tr class="r1"><td class="checkbox" data-columnid="core_question\local\bank\checkbox_column-checkbox_column"><input id="checkq20450639" name="q20450639" type="checkbox" value="1" data-action="toggle" data-toggle="slave" data-togglegroup="qbank"> <label for="checkq20450639" class="accesshide">Auswahl</label></td><td class="qtype" data-columnid="qbank_viewquestiontype\question_type_column-question_type_column"><img class="icon " title="Kprim (ETH)" alt="Kprim (ETH)" src="https://moodle.zhaw.ch/theme/image.php/boost_union/qtype_kprime/1756457962/icon"></td><td class="state" data-columnid="mod_studentquiz\question\bank\state_column-state_column"></td><td class="state_pin" data-columnid="mod_studentquiz\question\bank\state_pin_column-state_pin_column"></td><td class="questionname" data-columnid="mod_studentquiz\question\bank\question_name_column-question_name_column"><label for="checkq20450639">Laubfrösche</label></td><td class="pe-3 editmenu" data-columnid="mod_studentquiz\question\bank\sq_edit_menu_column-sq_edit_menu_column"><div class="action-menu moodle-actionmenu" id="action-menu-4" data-enhance="moodle-core-actionmenu"> <div class="menubar d-flex " id="action-menu-4-menubar"> <div class="action-menu-trigger"> <div class="dropdown"> <div class="dropdown-menu menu dropdown-menu-right" id="action-menu-4-menu" data-rel="menu-content" aria-labelledby="action-menu-toggle-4" role="menu"> </div> </div> </div> </div> </div></td><td class="pe-3 questionversionnumber" data-columnid="qbank_history\version_number_column-version_number_column">v1</td><td class="creatorname" data-columnid="mod_studentquiz\question\bank\anonym_creator_name_column-anonym_creator_name_column"><span></span><br><span class="date">20. August 2025, 15:15</span></td><td class="tags" data-columnid="mod_studentquiz\question\bank\tag_column-tag_column">n.a.</td><td class="attempts" data-columnid="mod_studentquiz\question\bank\attempts_column-attempts_column"><span class="pratice_info" tabindex="0" aria-label="Diese Frage wurde noch nie versucht.">n.a.&nbsp;|&nbsp;n.a.</span></td><td class="difficultylevel" data-columnid="mod_studentquiz\question\bank\\difficulty_level_column-difficulty_level_column"><span class="mod_studentquiz_difficulty" data-difficultylevel="0.50" data-mydifficulty="0" title="Community Schwierigkeit: 50% , Meine Schwierigkeit: n.a."></span></td><td class="rates" data-columnid="mod_studentquiz\question\bank\rate_column-rate_column"><span class="mod_studentquiz_ratingbar" data-rate="3.50" title="Community Bewertung: 3.5 , Meine Bewertung: n.a."></span></td><td class="comment" data-columnid="mod_studentquiz\question\bank\comment_column-comment_column"><span class="public-comment badge badge-primary" title="Anzahl an öffentlichen Kommentaren. Ein blauer Hintergrund bedeutet, dass Sie mindest einen ungelesenen Kommentar haben."> 1 <span class="sr-only">Öffentlich Kommentar(inklusive ungelesener)</span> </span></td></tr><tr class="r0"><td class="checkbox" data-columnid="core_question\local\bank\checkbox_column-checkbox_column"><input id="checkq20450638" name="q20450638" type="checkbox" value="1" data-action="toggle" data-toggle="slave" data-togglegroup="qbank"> <label for="checkq20450638" class="accesshide">Auswahl</label></td><td class="qtype" data-columnid="qbank_viewquestiontype\question_type_column-question_type_column"><img class="icon " title="Kprim (ETH)" alt="Kprim (ETH)" src="https://moodle.zhaw.ch/theme/image.php/boost_union/qtype_kprime/1756457962/icon"></td><td class="state" data-columnid="mod_studentquiz\question\bank\state_column-state_column"></td><td class="state_pin" data-columnid="mod_studentquiz\question\bank\state_pin_column-state_pin_column"></td><td class="questionname" data-columnid="mod_studentquiz\question\bank\question_name_column-question_name_column"><label for="checkq20450638">Wertschöpfungsanalyse</label></td><td class="pe-3 editmenu" data-columnid="mod_studentquiz\question\bank\sq_edit_menu_column-sq_edit_menu_column"><div class="action-menu moodle-actionmenu" id="action-menu-5" data-enhance="moodle-core-actionmenu"> <div class="menubar d-flex " id="action-menu-5-menubar"> <div class="action-menu-trigger"> <div class="dropdown"> <div class="dropdown-menu menu dropdown-menu-right" id="action-menu-5-menu" data-rel="menu-content" aria-labelledby="action-menu-toggle-5" role="menu"> </div> </div> </div> </div> </div></td><td class="pe-3 questionversionnumber" data-columnid="qbank_history\version_number_column-version_number_column">v1</td><td class="creatorname" data-columnid="mod_studentquiz\question\bank\anonym_creator_name_column-anonym_creator_name_column"><span></span><br><span class="date">20. August 2025, 15:10</span></td><td class="tags" data-columnid="mod_studentquiz\question\bank\tag_column-tag_column">n.a.</td><td class="attempts" data-columnid="mod_studentquiz\question\bank\attempts_column-attempts_column"><span class="pratice_info" tabindex="0" aria-label="Diese Frage wurde noch nie versucht.">n.a.&nbsp;|&nbsp;n.a.</span></td><td class="difficultylevel" data-columnid="mod_studentquiz\question\bank\\difficulty_level_column-difficulty_level_column"><span class="mod_studentquiz_difficulty" data-mydifficulty="0" title=""></span></td><td class="rates" data-columnid="mod_studentquiz\question\bank\rate_column-rate_column"><span class="mod_studentquiz_ratingbar" title="">n.a.</span></td><td class="comment" data-columnid="mod_studentquiz\question\bank\comment_column-comment_column"><span class="public-comment badge badge-secondary" title="Anzahl an öffentlichen Kommentaren. Ein blauer Hintergrund bedeutet, dass Sie mindest einen ungelesenen Kommentar haben."> n.a. <span class="sr-only">Öffentlich Kommentare</span> </span></td></tr></tbody></table>`;
   }
 
+  // --- Helper Tables Functions ---
+  
+  async function uploadStudentHelperTable() {
+    const file = els.studentHelperFile && els.studentHelperFile.files && els.studentHelperFile.files[0];
+    if (!file) {
+      els.statusStudentHelper.textContent = 'Bitte Datei auswählen.';
+      return;
+    }
+    
+    els.statusStudentHelper.textContent = 'Lade...';
+    
+    try {
+      const data = await readExcelFile(file);
+      if (!data || data.length === 0) {
+        els.statusStudentHelper.textContent = 'Fehler: Keine Daten gefunden.';
+        return;
+      }
+      
+      // Expected columns: kuerzel, "Vorname Nachname"
+      studentHelperData = data.map(row => ({
+        kuerzel: String(row.kuerzel || row.Kuerzel || '').trim().toLowerCase(),
+        fullname: String(row['Vorname Nachname'] || row.fullname || row.name || '').trim()
+      })).filter(r => r.kuerzel && r.fullname);
+      
+      if (studentHelperData.length === 0) {
+        els.statusStudentHelper.textContent = 'Fehler: Spalten "kuerzel" und "Vorname Nachname" nicht gefunden.';
+        return;
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('3pmo_student_helper', JSON.stringify(studentHelperData));
+      
+      els.statusStudentHelper.textContent = `✓ ${studentHelperData.length} Studierende geladen.`;
+      els.btnClearStudentHelper.style.display = '';
+      els.btnUploadStudentHelper.textContent = 'Bestehende Angaben ersetzen';
+    } catch (e) {
+      els.statusStudentHelper.textContent = 'Fehler beim Laden der Datei.';
+      console.error(e);
+    }
+  }
+  
+  function clearStudentHelperTable() {
+    studentHelperData = [];
+    localStorage.removeItem('3pmo_student_helper');
+    els.statusStudentHelper.textContent = 'Hilfstabelle wurde gelöscht.';
+    els.btnClearStudentHelper.style.display = 'none';
+    els.btnUploadStudentHelper.textContent = 'Hochladen';
+    if (els.studentHelperFile) els.studentHelperFile.value = '';
+  }
+  
+  async function uploadAssignmentTable() {
+    if (!currentTestName) {
+      els.statusAssignment.textContent = 'Fehler: Kein Test ausgewählt. Bitte erst Test erstellen/laden.';
+      return;
+    }
+    
+    const file = els.assignmentFile && els.assignmentFile.files && els.assignmentFile.files[0];
+    if (!file) {
+      els.statusAssignment.textContent = 'Bitte Datei auswählen.';
+      return;
+    }
+    
+    els.statusAssignment.textContent = 'Lade...';
+    
+    try {
+      const data = await readExcelFile(file);
+      if (!data || data.length === 0) {
+        els.statusAssignment.textContent = 'Fehler: Keine Daten gefunden.';
+        return;
+      }
+      
+      // Expected columns: Kürzel, Frage erstellen in Block, Fragen beantworten in Blöcken
+      assignmentData = data.map(row => ({
+        kuerzel: String(row['Kürzel'] || row.kuerzel || '').trim().toLowerCase(),
+        createBlock: String(row['Frage erstellen in Block'] || '').trim(),
+        answerBlocks: String(row['Fragen beantworten in Blöcken'] || '').trim()
+      })).filter(r => r.kuerzel && r.createBlock);
+      
+      if (assignmentData.length === 0) {
+        els.statusAssignment.textContent = 'Fehler: Erwartete Spalten nicht gefunden.';
+        return;
+      }
+      
+      // Save to localStorage with test name
+      const key = `3pmo_assignment_${currentTestName}`;
+      localStorage.setItem(key, JSON.stringify(assignmentData));
+      
+      els.statusAssignment.textContent = `✓ Zuteilung für Test "${currentTestName}" geladen (${assignmentData.length} Einträge).`;
+      els.btnClearAssignment.style.display = '';
+      els.btnUploadAssignment.textContent = 'Zuteilung ersetzen';
+      
+      // Trigger re-validation if grades are already generated
+      if (combinedGradesData && combinedGradesData.length > 0) {
+        validateAssignments();
+        renderCombinedGradesTable(combinedGradesData);
+        if (isFilterActive) filterManualReviewOnly();
+      }
+    } catch (e) {
+      els.statusAssignment.textContent = 'Fehler beim Laden der Datei.';
+      console.error(e);
+    }
+  }
+  
+  function clearAssignmentTable() {
+    if (!currentTestName) return;
+    assignmentData = [];
+    const key = `3pmo_assignment_${currentTestName}`;
+    localStorage.removeItem(key);
+    els.statusAssignment.textContent = 'Zuteilungstabelle wurde gelöscht.';
+    els.btnClearAssignment.style.display = 'none';
+    els.btnUploadAssignment.textContent = 'Hochladen';
+    if (els.assignmentFile) els.assignmentFile.value = '';
+    
+    // Trigger re-validation
+    if (combinedGradesData && combinedGradesData.length > 0) {
+      validateAssignments();
+      renderCombinedGradesTable(combinedGradesData);
+      if (isFilterActive) filterManualReviewOnly();
+    }
+  }
+  
+  function readExcelFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+          resolve(json);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
+  
+  function loadHelperTablesFromStorage() {
+    // Load student helper table
+    const helperStr = localStorage.getItem('3pmo_student_helper');
+    if (helperStr) {
+      try {
+        studentHelperData = JSON.parse(helperStr);
+        if (studentHelperData && studentHelperData.length > 0) {
+          els.statusStudentHelper.textContent = `✓ ${studentHelperData.length} Studierende geladen (aus LocalStorage).`;
+          els.btnClearStudentHelper.style.display = '';
+          els.btnUploadStudentHelper.textContent = 'Bestehende Angaben ersetzen';
+        }
+      } catch (e) {
+        console.error('Error loading student helper data:', e);
+      }
+    } else {
+      els.statusStudentHelper.textContent = '⚠️ Hilfstabelle fehlt - Datei muss hochgeladen werden.';
+    }
+    
+    // Load assignment table for current test
+    if (currentTestName) {
+      const key = `3pmo_assignment_${currentTestName}`;
+      const assignStr = localStorage.getItem(key);
+      if (assignStr) {
+        try {
+          assignmentData = JSON.parse(assignStr);
+          if (assignmentData && assignmentData.length > 0) {
+            els.statusAssignment.textContent = `✓ Zuteilung für Test "${currentTestName}" geladen (${assignmentData.length} Einträge).`;
+            els.btnClearAssignment.style.display = '';
+            els.btnUploadAssignment.textContent = 'Zuteilung ersetzen';
+          }
+        } catch (e) {
+          console.error('Error loading assignment data:', e);
+        }
+      } else {
+        els.statusAssignment.textContent = `⚠️ Zuteilung für Test "${currentTestName}" fehlt - Datei muss hochgeladen werden.`;
+      }
+    }
+  }
+
+  // --- Validation Functions ---
+
+  function validateAssignments() {
+    if (!assignmentData || assignmentData.length === 0) {
+      // No assignment data, clear validation fields
+      combinedGradesData.forEach(student => {
+        student.wrong_block = '';
+        student.expected_responders = '';
+      });
+      return;
+    }
+    
+    combinedGradesData.forEach(student => {
+      const kuerzel = getKuerzelFromName(student.student_name);
+      const assignment = assignmentData.find(a => a.kuerzel === kuerzel);
+      
+      if (!assignment) {
+        student.wrong_block = '';
+        student.expected_responders = '';
+        return;
+      }
+      
+      // Check if question block matches
+      const questionName = student.question_name || '';
+      const expectedBlock = assignment.createBlock;
+      const actualBlock = extractBlockPrefix(questionName);
+      
+      if (actualBlock && expectedBlock && actualBlock !== expectedBlock) {
+        student.wrong_block = 'YES';
+        student.requiresManualReview = true;
+        if (!student.reviewFlags) student.reviewFlags = [];
+        if (!student.reviewFlags.includes('wrong_block')) {
+          student.reviewFlags.push('wrong_block');
+        }
+        // Add to justification
+        const msg = `Falsch: Frage in Block "${actualBlock}" statt "${expectedBlock}".`;
+        if (!student.justification || !student.justification.includes(msg)) {
+          student.justification = student.justification ? (student.justification + ' ' + msg) : msg;
+        }
+      } else {
+        student.wrong_block = '';
+      }
+      
+      // Find expected responders if comments < 3
+      const comments = parseFloat(student.total_comments) || 0;
+      if (comments < 3 && expectedBlock) {
+        const responders = findExpectedResponders(expectedBlock);
+        student.expected_responders = responders.join('\n');
+      } else {
+        student.expected_responders = '';
+      }
+    });
+  }
+
+  function getKuerzelFromName(fullname) {
+    if (!studentHelperData || studentHelperData.length === 0) return '';
+    const normalized = fullname.trim().toLowerCase();
+    const match = studentHelperData.find(s => s.fullname.toLowerCase() === normalized);
+    return match ? match.kuerzel : '';
+  }
+
+  function extractBlockPrefix(questionName) {
+    // Extract prefix like "SW01F13-17" from question name
+    // Pattern: starts with letters/numbers followed by F and numbers-numbers
+    const match = questionName.match(/^([A-Z0-9]+F\d+-\d+)/i);
+    return match ? match[1] : '';
+  }
+
+  function findExpectedResponders(blockPrefix) {
+    if (!assignmentData || assignmentData.length === 0) return [];
+    if (!studentHelperData || studentHelperData.length === 0) return [];
+    
+    const responders = [];
+    assignmentData.forEach(assignment => {
+      if (assignment.answerBlocks.includes(blockPrefix)) {
+        const kuerzel = assignment.kuerzel;
+        const student = studentHelperData.find(s => s.kuerzel === kuerzel);
+        if (student) {
+          responders.push(student.fullname);
+        }
+      }
+    });
+    return responders;
+  }
+
+
   // Event bindings
   if (els.btnParse) els.btnParse.addEventListener('click', parseHTML);
   if (els.btnClear) els.btnClear.addEventListener('click', clearAll);
@@ -1506,6 +1801,12 @@
   }
   if (els.btnDownloadAssign) {
     els.btnDownloadAssign.addEventListener('click', downloadAssignmentExcel);
+  
+  // Helper tables events
+  if (els.btnUploadStudentHelper) els.btnUploadStudentHelper.addEventListener('click', uploadStudentHelperTable);
+  if (els.btnClearStudentHelper) els.btnClearStudentHelper.addEventListener('click', clearStudentHelperTable);
+  if (els.btnUploadAssignment) els.btnUploadAssignment.addEventListener('click', uploadAssignmentTable);
+  if (els.btnClearAssignment) els.btnClearAssignment.addEventListener('click', clearAssignmentTable);
   }
 
   // Load current test on startup
@@ -1515,4 +1816,7 @@
     currentTestName = lastTest;
     setTestStatus(`Aktiver Test: "${lastTest}"`);
   }
+  
+  // Load helper tables from storage
+  loadHelperTablesFromStorage();
 })();
