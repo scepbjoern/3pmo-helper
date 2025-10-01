@@ -558,8 +558,7 @@
         automatic_grade: null,
         manual_grade: null,
         justification: '',
-        wrong_block: '',
-        expected_responders: ''
+        wrong_block: ''
       };
 
       // Calculate automatic grade
@@ -712,8 +711,7 @@
         { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
         { val: r.correct_answers_points, key: 'correct_answers_points' },
         { val: r.false_answers_points, key: 'false_answers_points' },
-        { val: r.wrong_block, key: 'wrong_block' },
-        { val: r.expected_responders, key: 'expected_responders' }
+        { val: r.wrong_block, key: 'wrong_block' }
       ];
 
       const reviewFlags = r.reviewFlags || [];
@@ -754,11 +752,6 @@
           // Wrong block - show YES in red
           else if (cell.key === 'wrong_block' && cell.val === 'YES') {
             td.innerHTML = `<span class="review-required">YES</span>`;
-          }
-          // Expected responders - preserve line breaks
-          else if (cell.key === 'expected_responders' && cell.val) {
-            td.innerHTML = escapeHtml(String(cell.val)).replace(/\n/g, '<br>');
-            td.style.whiteSpace = 'pre-wrap';
           }
           // Mark flagged fields in red
           else if (isFlagged) {
@@ -1657,7 +1650,6 @@
       // No assignment data, clear validation fields
       combinedGradesData.forEach(student => {
         student.wrong_block = '';
-        student.expected_responders = '';
       });
       return;
     }
@@ -1668,7 +1660,6 @@
       
       if (!assignment) {
         student.wrong_block = '';
-        student.expected_responders = '';
         return;
       }
       
@@ -1692,15 +1683,6 @@
       } else {
         student.wrong_block = '';
       }
-      
-      // Find expected responders if comments < 3
-      const comments = parseFloat(student.total_comments) || 0;
-      if (comments < 3 && expectedBlock) {
-        const responders = findExpectedResponders(expectedBlock);
-        student.expected_responders = responders.join('\n');
-      } else {
-        student.expected_responders = '';
-      }
     });
   }
 
@@ -1718,32 +1700,13 @@
     return match ? match[1] : '';
   }
 
-  function findExpectedResponders(blockPrefix) {
-    if (!assignmentData || assignmentData.length === 0) return [];
-    if (!studentHelperData || studentHelperData.length === 0) return [];
-    
-    const responders = [];
-    assignmentData.forEach(assignment => {
-      if (assignment.answerBlocks.includes(blockPrefix)) {
-        const kuerzel = assignment.kuerzel;
-        const student = studentHelperData.find(s => s.kuerzel === kuerzel);
-        if (student) {
-          responders.push(student.fullname);
-        }
-      }
-    });
-    return responders;
-  }
-
-
-  // Event bindings
+  // getSampleHTML removed - now loaded via fetch from samples/studentquiz-sample.html
   if (els.btnParse) els.btnParse.addEventListener('click', parseHTML);
   if (els.btnClear) els.btnClear.addEventListener('click', clearAll);
   if (els.btnDownload) els.btnDownload.addEventListener('click', downloadExcel);
 
   // Ranking events
   if (els.btnParseRanking) els.btnParseRanking.addEventListener('click', parseRankingHTML);
-  if (els.btnClearRanking) els.btnClearRanking.addEventListener('click', clearRanking);
   if (els.btnDownloadRanking) els.btnDownloadRanking.addEventListener('click', downloadRankingExcel);
 
   // Grades events (Bereich 4)
