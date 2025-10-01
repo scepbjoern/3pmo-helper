@@ -57,6 +57,8 @@
   let combinedGradesData = []; // Combined data from Bereich 2 & 3
   let currentTestName = null;
   let saveDebounceTimer = null; // Debounce timer for auto-save
+  let currentSortColumn = 'student_name'; // Default sort column
+  let currentSortOrder = 'asc'; // Default sort order
   // Data for assignment page
   let studentsList = []; // [{Kuerzel, Klasse}]
   let assignRows = [];   // rows for preview/export
@@ -804,6 +806,74 @@
     setGradesStatus(`Alle ${rows.length} Studierenden angezeigt.`);
   }
 
+  // --- Table sorting ---
+  function sortGradesTable(column) {
+    if (!combinedGradesData || !combinedGradesData.length) return;
+    
+    // Toggle sort order if clicking same column
+    if (currentSortColumn === column) {
+      currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      currentSortColumn = column;
+      currentSortOrder = 'asc';
+    }
+    
+    // Sort the data
+    combinedGradesData.sort((a, b) => {
+      let valA = a[column];
+      let valB = b[column];
+      
+      // Handle null/undefined
+      if (valA == null) valA = '';
+      if (valB == null) valB = '';
+      
+      // Remove % for manual_grade comparison
+      if (column === 'manual_grade') {
+        valA = String(valA).replace('%', '').trim();
+        valB = String(valB).replace('%', '').trim();
+        valA = valA ? parseFloat(valA) : -Infinity;
+        valB = valB ? parseFloat(valB) : -Infinity;
+      }
+      
+      // Try numeric comparison first
+      const numA = parseFloat(valA);
+      const numB = parseFloat(valB);
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return currentSortOrder === 'asc' ? numA - numB : numB - numA;
+      }
+      
+      // String comparison
+      const strA = String(valA).toLowerCase();
+      const strB = String(valB).toLowerCase();
+      if (currentSortOrder === 'asc') {
+        return strA.localeCompare(strB, 'de-CH');
+      } else {
+        return strB.localeCompare(strA, 'de-CH');
+      }
+    });
+    
+    // Update header indicators
+    updateSortIndicators();
+    
+    // Re-render table
+    renderCombinedGradesTable(combinedGradesData);
+  }
+  
+  function updateSortIndicators() {
+    const headers = document.querySelectorAll('#gradesTable th.sortable');
+    headers.forEach(th => {
+      const col = th.dataset.sort;
+      if (col === currentSortColumn) {
+        th.dataset.order = currentSortOrder;
+        const indicator = currentSortOrder === 'asc' ? ' ▲' : ' ▼';
+        th.textContent = th.textContent.replace(/ [▲▼]$/, '') + indicator;
+      } else {
+        delete th.dataset.order;
+        th.textContent = th.textContent.replace(/ [▲▼]$/, '');
+      }
+    });
+  }
+
   // --- Test management ---
   function createNewTest() {
     const testName = els.testNameInput && els.testNameInput.value.trim();
@@ -1287,6 +1357,14 @@
   if (els.btnDownloadGrades) els.btnDownloadGrades.addEventListener('click', downloadCombinedGradesExcel);
   if (els.btnFilterManual) els.btnFilterManual.addEventListener('click', filterManualReviewOnly);
   if (els.btnShowAll) els.btnShowAll.addEventListener('click', showAllGrades);
+  
+  // Sortable table headers
+  document.querySelectorAll('#gradesTable th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const column = th.dataset.sort;
+      if (column) sortGradesTable(column);
+    });
+  });
 
   // Test management events
   if (els.btnNewTest) els.btnNewTest.addEventListener('click', createNewTest);

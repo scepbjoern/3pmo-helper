@@ -65,6 +65,20 @@ button:hover { filter: brightness(1.08); }
 #previewTable thead th, #assignPreviewTable thead th, .summary-table thead th { position: sticky; top: 0; background: #0b1220; }
 #previewTable tbody tr:hover, #assignPreviewTable tbody tr:hover, .summary-table tbody tr:hover { background: rgba(255,255,255,0.03); }
 
+/* Sortable table headers */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: background 0.2s;
+}
+.sortable:hover {
+  background: rgba(37, 99, 235, 0.2);
+}
+.sortable:active {
+  background: rgba(37, 99, 235, 0.3);
+}
+
 .note { margin-top: 16px; color: var(--muted); }
 
 /* Tabs & pages */
