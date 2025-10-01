@@ -975,8 +975,12 @@
       // 4. Wrong block display
       const wrongBlockDisplay = r.wrong_block === 'YES' ? 'YES' : '-';
       
+      // 5. Get Kürzel from student helper table
+      const kuerzel = getKuerzelFromName(r.student_name);
+      
       return {
         'Student': r.student_name,
+        'Kürzel': kuerzel || '-',
         'Bew. tot.': r.total_grade != null ? `${r.total_grade}%` : '-',
         'Bew. aut.': r.automatic_grade != null ? `${r.automatic_grade}%` : '-',
         'Bew. man.': r.manual_grade ?? '',
