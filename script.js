@@ -4,7 +4,6 @@
 
   const els = {
     input: $('#htmlInput'),
-    btnSample: $('#btnSample'),
     btnParse: $('#btnParse'),
     btnClear: $('#btnClear'),
     btnDownload: $('#btnDownload'),
@@ -19,13 +18,11 @@
 
     // Ranking UI (Bereich 3)
     inputRanking: $('#htmlInputRanking'),
-    btnSampleRanking: $('#btnSampleRanking'),
     btnParseRanking: $('#btnParseRanking'),
     btnClearRanking: $('#btnClearRanking'),
     btnDownloadRanking: $('#btnDownloadRanking'),
     statusRanking: $('#statusRanking'),
     rankingTableBody: $('#previewTableRanking tbody'),
-
     // Grades UI (Bereich 4)
     btnGenerateGrades: $('#btnGenerateGrades'),
     btnDownloadGrades: $('#btnDownloadGrades'),
@@ -59,6 +56,7 @@
   let rankingRows = [];
   let combinedGradesData = []; // Combined data from Bereich 2 & 3
   let currentTestName = null;
+  let saveDebounceTimer = null; // Debounce timer for auto-save
   // Data for assignment page
   let studentsList = []; // [{Kuerzel, Klasse}]
   let assignRows = [];   // rows for preview/export
@@ -82,19 +80,6 @@
 
   function setTestStatus(msg) {
     if (els.testStatus) els.testStatus.textContent = msg || '';
-  }
-
-  async function insertSample() {
-    setStatus('Lade Beispiel...');
-    try {
-      const response = await fetch('samples/studentquiz-sample.html');
-      if (!response.ok) throw new Error('Sample nicht gefunden');
-      const html = await response.text();
-      els.input.value = html.trim();
-      setStatus('Beispiel eingefügt.');
-    } catch (err) {
-      setStatus('Fehler beim Laden des Beispiels: ' + err.message);
-    }
   }
 
   function clearAll() {
@@ -313,20 +298,6 @@
   }
 
   // --- Bereich 3: Rangliste-Extraktion ---
-  async function insertSampleRanking() {
-    if (!els.inputRanking) return;
-    setRankingStatus('Lade Beispiel...');
-    try {
-      const response = await fetch('samples/ranking-sample.html');
-      if (!response.ok) throw new Error('Sample nicht gefunden');
-      const html = await response.text();
-      els.inputRanking.value = html.trim();
-      setRankingStatus('Beispiel eingefügt.');
-    } catch (err) {
-      setRankingStatus('Fehler beim Laden des Beispiels: ' + err.message);
-    }
-  }
-
   function clearRanking() {
     if (els.inputRanking) els.inputRanking.value = '';
     rankingRows = [];
@@ -769,8 +740,13 @@
     const student = combinedGradesData.find(s => s.student_name === studentName);
     if (student) {
       student[field] = value;
-      saveCurrentTestData();
-      setGradesStatus(`Änderung für ${studentName} gespeichert.`);
+      
+      // Debounced save - wait 500ms after last edit
+      clearTimeout(saveDebounceTimer);
+      saveDebounceTimer = setTimeout(() => {
+        saveCurrentTestData();
+        setGradesStatus(`Änderung für ${studentName} gespeichert.`);
+      }, 500);
     }
   }
 
@@ -1288,13 +1264,11 @@
   }
 
   // Event bindings
-  if (els.btnSample) els.btnSample.addEventListener('click', insertSample);
   if (els.btnParse) els.btnParse.addEventListener('click', parseHTML);
   if (els.btnClear) els.btnClear.addEventListener('click', clearAll);
   if (els.btnDownload) els.btnDownload.addEventListener('click', downloadExcel);
 
   // Ranking events
-  if (els.btnSampleRanking) els.btnSampleRanking.addEventListener('click', insertSampleRanking);
   if (els.btnParseRanking) els.btnParseRanking.addEventListener('click', parseRankingHTML);
   if (els.btnClearRanking) els.btnClearRanking.addEventListener('click', clearRanking);
   if (els.btnDownloadRanking) els.btnDownloadRanking.addEventListener('click', downloadRankingExcel);
