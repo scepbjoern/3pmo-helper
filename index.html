@@ -166,7 +166,12 @@
             <button id="btnShowAll" type="button">Alle anzeigen</button>
           </div>
 
-          <div class="table-wrapper">
+          <div class="table-height-control" id="tableHeightControl" style="display: none;">
+            <label for="tableHeightSlider">Tabellenhöhe: <span id="tableHeightValue">600</span>px</label>
+            <input type="range" id="tableHeightSlider" min="300" max="1200" value="600" step="50">
+          </div>
+
+          <div class="table-wrapper" id="gradesTableWrapper">
             <table id="gradesTable">
               <thead>
                 <tr>

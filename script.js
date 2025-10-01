@@ -31,6 +31,10 @@
     gradeFilterButtons: $('#gradeFilterButtons'),
     btnFilterManual: $('#btnFilterManual'),
     btnShowAll: $('#btnShowAll'),
+    tableHeightControl: $('#tableHeightControl'),
+    tableHeightSlider: $('#tableHeightSlider'),
+    tableHeightValue: $('#tableHeightValue'),
+    gradesTableWrapper: $('#gradesTableWrapper'),
 
     // Test management UI
     testNameInput: $('#testNameInput'),
@@ -567,6 +571,7 @@
     // Enable download button and show filter buttons
     if (els.btnDownloadGrades) els.btnDownloadGrades.disabled = false;
     if (els.gradeFilterButtons) els.gradeFilterButtons.style.display = '';
+    if (els.tableHeightControl) els.tableHeightControl.style.display = '';
 
     // Clear and collapse Bereich 2 & 3 to save browser resources
     if (els.tableBody) els.tableBody.innerHTML = '';
@@ -1365,6 +1370,25 @@
       if (column) sortGradesTable(column);
     });
   });
+  
+  // Table height slider
+  if (els.tableHeightSlider && els.gradesTableWrapper && els.tableHeightValue) {
+    els.tableHeightSlider.addEventListener('input', (e) => {
+      const height = e.target.value;
+      els.gradesTableWrapper.style.maxHeight = height + 'px';
+      els.tableHeightValue.textContent = height;
+      // Save preference to localStorage
+      localStorage.setItem('3pmo_table_height', height);
+    });
+    
+    // Load saved height preference
+    const savedHeight = localStorage.getItem('3pmo_table_height');
+    if (savedHeight) {
+      els.tableHeightSlider.value = savedHeight;
+      els.gradesTableWrapper.style.maxHeight = savedHeight + 'px';
+      els.tableHeightValue.textContent = savedHeight;
+    }
+  }
 
   // Test management events
   if (els.btnNewTest) els.btnNewTest.addEventListener('click', createNewTest);
