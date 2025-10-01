@@ -550,6 +550,15 @@
     combined.sort((a, b) => String(a.student_name).localeCompare(String(b.student_name), 'de-CH', { sensitivity: 'base' }));
 
     combinedGradesData = combined;
+    
+    // Load saved manual grades BEFORE rendering
+    if (currentTestName) {
+      const data = loadTestData(currentTestName);
+      if (data) {
+        applyManualGradesFromStorage(data);
+      }
+    }
+    
     renderCombinedGradesTable(combined);
     setGradesStatus(`${combined.length} Studierende kombiniert.`);
 
@@ -589,7 +598,7 @@
       checkbox.className = 'manual-review-checkbox';
       checkbox.dataset.student = r.student_name;
       checkbox.checked = r.requiresManualReview || false;
-      checkbox.addEventListener('change', handleManualReviewCheckbox);
+      // Event listener will be attached via delegation, not per checkbox
       tdCheckbox.appendChild(checkbox);
       tr.appendChild(tdCheckbox);
 
@@ -647,12 +656,14 @@
     // Attach listeners for editable cells
     attachEditableListeners();
     
-    // Load manual grades if test is active
-    if (currentTestName) {
-      const data = loadTestData(currentTestName);
-      if (data) {
-        applyManualGradesFromStorage(data);
-      }
+    // Attach delegated event listener for checkboxes (only once)
+    if (!els.gradesTableBody.dataset.checkboxListenerAttached) {
+      els.gradesTableBody.addEventListener('change', (e) => {
+        if (e.target.classList.contains('manual-review-checkbox')) {
+          handleManualReviewCheckbox(e);
+        }
+      });
+      els.gradesTableBody.dataset.checkboxListenerAttached = 'true';
     }
   }
 
@@ -837,10 +848,8 @@
       }
     });
     
-    // Re-render table
-    if (combinedGradesData.length > 0) {
-      renderCombinedGradesTable(combinedGradesData);
-    }
+    // NOTE: Do NOT re-render table here to avoid infinite recursion
+    // The table will be rendered by the caller (generateCombinedGrades or loadExistingTest)
   }
 
   function saveCurrentTestData() {
