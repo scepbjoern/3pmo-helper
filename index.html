@@ -228,15 +228,31 @@
           </details>
 
           <details class="note">
-            <summary>Hinweis zur Bewertung</summary>
-            <p><strong>Automatische Bewertung (0-100%):</strong> Gewichtete Gesamtbewertung aus drei Aspekten:</p>
+            <summary>Hinweise zur Bewertung</summary>
+            
+            <h4>Automatische Bewertung (0-100%)</h4>
+            <p>Gewichtete Gesamtbewertung aus drei Aspekten:</p>
             <ul>
               <li><strong>Frage erstellt (50%):</strong> 0 Fragen = 0%, 1 Frage = 100%, mehr als 1 Frage = 70%</li>
               <li><strong>Fragebewertung (25%):</strong> Basierend auf erhaltenen Sternen pro veröffentlichter Frage, normalisiert auf Skala 0-5 (5 Sterne = 100%)</li>
               <li><strong>Fragen beantwortet (25%):</strong> Basierend auf Summe der Antwortpunkte, normalisiert auf max. 5 Punkte (≥5 Punkte = 100%)</li>
             </ul>
             <p><strong>Formel:</strong> 50% × Bewertung_FrageErstellt + 25% × Bewertung_FrageBewertung + 25% × Bewertung_FragenBeantwortung</p>
-            <p><strong>Manuelle Bewertung:</strong> Kann verwendet werden, um die automatische Bewertung zu überschreiben. Begründungen helfen bei der Nachvollziehbarkeit.</p>
+            
+            <h4>Automatische Markierung für manuelle Bewertung</h4>
+            <p>Ein Eintrag wird automatisch als "Manuell zu bewerten" markiert (rot hervorgehoben), wenn eines der folgenden Kriterien zutrifft:</p>
+            <ul>
+              <li><strong>Mehr als eine Frage erstellt:</strong> Anzahl Fragen > 1 (ungewöhnlich, könnte auf Fehler hindeuten)</li>
+              <li><strong>Punkte Sterne < 4:</strong> Niedrige Bewertung der erstellten Frage(n), deutet auf Qualitätsprobleme hin</li>
+              <li><strong>Σ Kommentare < 3:</strong> Zu wenige Bewertungen der Frage (< 3 Studierende), daher ist die Aussagekraft der Punkte Sterne nicht ausreichend. Die Qualität der Frage muss manuell geprüft werden</li>
+              <li><strong>Punkte Antworten < 5:</strong> Zu wenig Engagement beim Beantworten von Fragen (25% der Bewertung)</li>
+              <li><strong>Mehr falsche als richtige Antworten:</strong> Deutet darauf hin, dass der Studierende möglicherweise geraten hat statt die Fragen ernsthaft zu beantworten (erkennbar an geringer investierter Zeit)</li>
+              <li><strong>Falscher Frageblock:</strong> Frage wurde im falschen thematischen Block erstellt (Zuteilungsfehler)</li>
+            </ul>
+            <p><strong>Zweck:</strong> Diese Kriterien helfen dabei, Studierende zu identifizieren, die besondere Aufmerksamkeit benötigen oder bei denen die automatische Bewertung möglicherweise nicht angemessen ist.</p>
+            
+            <h4>Manuelle Bewertung</h4>
+            <p>Kann verwendet werden, um die automatische Bewertung zu überschreiben. Begründungen helfen bei der Nachvollziehbarkeit und Transparenz gegenüber den Studierenden.</p>
           </details>
         </div>
       </details>

@@ -757,6 +757,9 @@
         return `${r.total_answers_points} (R: ${correct} / F: ${wrong})`;
       })();
       
+      // Check if more wrong than correct answers
+      const hasMoreWrongThanCorrect = (r.false_answers_points ?? 0) > (r.correct_answers_points ?? 0);
+      
       // 4. Wrong block display: "YES" or "-"
       const wrongBlockDisplay = r.wrong_block === 'YES' ? 'YES' : '-';
 
@@ -770,7 +773,7 @@
         { val: r.total_comments, key: 'total_comments' },
         { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
         { val: wrongBlockDisplay, key: 'wrong_block', rawVal: r.wrong_block },
-        { val: answersDisplay, key: 'total_answers_points', sortVal: r.total_answers_points }
+        { val: answersDisplay, key: 'total_answers_points', sortVal: r.total_answers_points, hasMoreWrong: hasMoreWrongThanCorrect }
       ];
 
       const reviewFlags = r.reviewFlags || [];
@@ -823,6 +826,14 @@
               td.innerHTML = `<span class="review-required">YES</span>`;
             } else {
               td.textContent = '-';
+            }
+          }
+          // Punkte Antworten - highlight if flagged or more wrong than correct
+          else if (cell.key === 'total_answers_points') {
+            if (isFlagged || cell.hasMoreWrong) {
+              td.innerHTML = `<span class="review-required">${escapeHtml(String(cell.val))}</span>`;
+            } else {
+              td.textContent = cell.val;
             }
           }
           // Mark flagged fields in red
