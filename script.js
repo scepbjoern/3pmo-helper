@@ -63,6 +63,7 @@
   let saveDebounceTimer = null; // Debounce timer for auto-save
   let currentSortColumn = 'student_name'; // Default sort column
   let currentSortOrder = 'asc'; // Default sort order
+  let isFilterActive = false; // Track if manual review filter is active
   // Data for assignment page
   let studentsList = []; // [{Kuerzel, Klasse}]
   let assignRows = [];   // rows for preview/export
@@ -571,6 +572,9 @@
     renderCombinedGradesTable(combined);
     setGradesStatus(`${combined.length} Studierende kombiniert.`);
 
+    // Reset filter status
+    isFilterActive = false;
+
     // Enable download button and show filter buttons
     if (els.btnDownloadGrades) els.btnDownloadGrades.disabled = false;
     if (els.gradeFilterButtons) els.gradeFilterButtons.style.display = '';
@@ -882,6 +886,7 @@
         tr.style.display = 'none';
       }
     });
+    isFilterActive = true;
     setGradesStatus(`${visibleCount} manuell zu bewertende Studierende angezeigt.`);
   }
 
@@ -891,6 +896,7 @@
     rows.forEach(tr => {
       tr.style.display = '';
     });
+    isFilterActive = false;
     setGradesStatus(`Alle ${rows.length} Studierenden angezeigt.`);
   }
 
@@ -945,6 +951,11 @@
     
     // Re-render table
     renderCombinedGradesTable(combinedGradesData);
+    
+    // Re-apply filter if it was active
+    if (isFilterActive) {
+      filterManualReviewOnly();
+    }
   }
   
   function updateSortIndicators() {
