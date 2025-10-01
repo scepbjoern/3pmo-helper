@@ -31,6 +31,9 @@
     btnDownloadGrades: $('#btnDownloadGrades'),
     statusGrades: $('#statusGrades'),
     gradesTableBody: $('#gradesTable tbody'),
+    gradeFilterButtons: $('#gradeFilterButtons'),
+    btnFilterManual: $('#btnFilterManual'),
+    btnShowAll: $('#btnShowAll'),
 
     // Test management UI
     testNameInput: $('#testNameInput'),
@@ -579,8 +582,9 @@
     renderCombinedGradesTable(combined);
     setGradesStatus(`${combined.length} Studierende kombiniert.`);
 
-    // Enable download button
+    // Enable download button and show filter buttons
     if (els.btnDownloadGrades) els.btnDownloadGrades.disabled = false;
+    if (els.gradeFilterButtons) els.gradeFilterButtons.style.display = '';
 
     // Clear and collapse Bereich 2 & 3 to save browser resources
     if (els.tableBody) els.tableBody.innerHTML = '';
@@ -604,6 +608,19 @@
 
     rows.forEach(r => {
       const tr = document.createElement('tr');
+      tr.dataset.studentName = r.student_name;
+      if (r.requiresManualReview) tr.dataset.manualReview = 'true';
+
+      // Checkbox cell
+      const tdCheckbox = document.createElement('td');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'manual-review-checkbox';
+      checkbox.dataset.student = r.student_name;
+      checkbox.checked = r.requiresManualReview || false;
+      checkbox.addEventListener('change', handleManualReviewCheckbox);
+      tdCheckbox.appendChild(checkbox);
+      tr.appendChild(tdCheckbox);
 
       const cells = [
         { val: r.student_name, key: 'student_name' },
@@ -729,11 +746,23 @@
     const cell = e.target;
     const studentName = cell.dataset.student;
     const field = cell.dataset.field;
-    const value = cell.textContent.trim();
+    let value = cell.textContent.trim();
     
     if (!currentTestName) {
       setGradesStatus('Bitte zuerst einen Test anlegen oder laden.');
       return;
+    }
+    
+    // If manual_grade field: format as percentage if it's a number
+    if (field === 'manual_grade' && value) {
+      // Remove existing % if present
+      value = value.replace('%', '').trim();
+      // Check if it's a valid number
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        value = `${numValue}%`;
+        cell.textContent = value;
+      }
     }
     
     // Update in combinedGradesData
@@ -743,6 +772,49 @@
       saveCurrentTestData();
       setGradesStatus(`Änderung für ${studentName} gespeichert.`);
     }
+  }
+
+  // --- Manual review checkbox ---
+  function handleManualReviewCheckbox(e) {
+    const checkbox = e.target;
+    const studentName = checkbox.dataset.student;
+    const student = combinedGradesData.find(s => s.student_name === studentName);
+    if (student) {
+      student.requiresManualReview = checkbox.checked;
+      const tr = checkbox.closest('tr');
+      if (tr) {
+        if (checkbox.checked) {
+          tr.dataset.manualReview = 'true';
+        } else {
+          delete tr.dataset.manualReview;
+        }
+      }
+      saveCurrentTestData();
+    }
+  }
+
+  function filterManualReviewOnly() {
+    const rows = els.gradesTableBody && els.gradesTableBody.querySelectorAll('tr');
+    if (!rows) return;
+    let visibleCount = 0;
+    rows.forEach(tr => {
+      if (tr.dataset.manualReview === 'true') {
+        tr.style.display = '';
+        visibleCount++;
+      } else {
+        tr.style.display = 'none';
+      }
+    });
+    setGradesStatus(`${visibleCount} manuell zu bewertende Studierende angezeigt.`);
+  }
+
+  function showAllGrades() {
+    const rows = els.gradesTableBody && els.gradesTableBody.querySelectorAll('tr');
+    if (!rows) return;
+    rows.forEach(tr => {
+      tr.style.display = '';
+    });
+    setGradesStatus(`Alle ${rows.length} Studierenden angezeigt.`);
   }
 
   // --- Test management ---
@@ -785,6 +857,7 @@
       if (stored) {
         row.manual_grade = stored.manual_grade || null;
         row.justification = stored.justification || '';
+        row.requiresManualReview = stored.requiresManualReview || false;
       }
     });
     
@@ -800,10 +873,11 @@
     // Extract only manual grades
     const manualGrades = {};
     combinedGradesData.forEach(row => {
-      if (row.manual_grade || row.justification) {
+      if (row.manual_grade || row.justification || row.requiresManualReview) {
         manualGrades[row.student_name] = {
           manual_grade: row.manual_grade || null,
-          justification: row.justification || ''
+          justification: row.justification || '',
+          requiresManualReview: row.requiresManualReview || false
         };
       }
     });
@@ -1228,6 +1302,8 @@
   // Grades events (Bereich 4)
   if (els.btnGenerateGrades) els.btnGenerateGrades.addEventListener('click', generateCombinedGrades);
   if (els.btnDownloadGrades) els.btnDownloadGrades.addEventListener('click', downloadCombinedGradesExcel);
+  if (els.btnFilterManual) els.btnFilterManual.addEventListener('click', filterManualReviewOnly);
+  if (els.btnShowAll) els.btnShowAll.addEventListener('click', showAllGrades);
 
   // Test management events
   if (els.btnNewTest) els.btnNewTest.addEventListener('click', createNewTest);

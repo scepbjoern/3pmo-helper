@@ -163,10 +163,16 @@
 
           <div id="statusGrades" class="status" role="status" aria-live="polite"></div>
 
+          <div class="buttons" id="gradeFilterButtons" style="display: none;">
+            <button id="btnFilterManual" type="button">Nur manuell zu Bewertende anzeigen</button>
+            <button id="btnShowAll" type="button">Alle anzeigen</button>
+          </div>
+
           <div class="table-wrapper">
             <table id="gradesTable">
               <thead>
                 <tr>
+                  <th>Manuell</th>
                   <th>Student</th>
                   <th>Automatische Bewertung</th>
                   <th>Manuelle Bewertung</th>
