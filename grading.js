@@ -58,10 +58,26 @@ function calculateAutomaticGrade(data) {
   scoreQuestionAnswered = Math.min(100, Math.max(0, scoreQuestionAnswered));
 
   // Weighted average
-  const totalGrade = 
+  let totalGrade = 
     WEIGHT_QUESTION_CREATED * scoreQuestionCreated +
     WEIGHT_QUESTION_RATING * scoreQuestionRating +
     WEIGHT_QUESTION_ANSWERED * scoreQuestionAnswered;
+  
+  // Additional deductions
+  // Wrong block: -20 percentage points
+  if (data.wrong_block === 'YES') {
+    totalGrade -= 20;
+  }
+  
+  // More wrong than correct answers: -10 percentage points
+  const correctPts = data.correct_answers_points ?? 0;
+  const wrongPts = data.false_answers_points ?? 0;
+  if (wrongPts > correctPts) {
+    totalGrade -= 10;
+  }
+  
+  // Ensure grade doesn't go below 0
+  totalGrade = Math.max(0, totalGrade);
 
   return Math.round(totalGrade); // Round to integer percentage
 }

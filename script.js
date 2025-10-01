@@ -502,6 +502,65 @@
     return String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
   }
 
+  // --- Automatic Justification Generator ---
+  function generateAutomaticJustification(row) {
+    const justifications = [];
+    
+    // Aspect 1: Question Created (50% weight)
+    const qCount = row.question_count ?? 0;
+    if (qCount === 0) {
+      justifications.push('Keine Frage erstellt: -50 Prozentpunkte (0% von 50%)');
+      // No question = no rating points either
+      justifications.push('Keine Frage für Bewertung: -25 Prozentpunkte (0% von 25%)');
+    } else if (qCount > 1) {
+      justifications.push(`${qCount} Fragen erstellt (erwartet: 1): -15 Prozentpunkte (70% statt 100% von 50%)`);
+    }
+    
+    // Aspect 2: Question Rating (25% weight, 2-5 scale) - only if question exists
+    if (qCount > 0) {
+      const publishedPts = row.published_question_points ?? 0;
+      const ratingPts = row.rating_points ?? 0;
+      if (publishedPts > 0 && ratingPts != null) {
+        const avgRating = ratingPts / publishedPts;
+        let ratingScore = 0;
+        if (avgRating <= 2) {
+          ratingScore = 0;
+        } else {
+          ratingScore = ((avgRating - 2) / 3) * 100;
+        }
+        
+        if (ratingScore < 100) {
+          const deduction = 25 - (ratingScore / 100 * 25);
+          justifications.push(`Fragebewertung ${avgRating.toFixed(2)} Sterne (erwartet: 5): -${deduction.toFixed(1)} Prozentpunkte (${ratingScore.toFixed(0)}% von 25%)`);
+        }
+      }
+    }
+    
+    // Aspect 3: Questions Answered (25% weight, 0-5 points)
+    const totalAnswerPts = row.total_answers_points ?? 0;
+    const cappedAnswerPts = Math.min(5, totalAnswerPts);
+    const answeredScore = (cappedAnswerPts / 5) * 100;
+    
+    if (answeredScore < 100) {
+      const deduction = 25 - (answeredScore / 100 * 25);
+      justifications.push(`Fragen beantwortet ${totalAnswerPts} Punkte (erwartet: ≥5): -${deduction.toFixed(1)} Prozentpunkte (${answeredScore.toFixed(0)}% von 25%)`);
+    }
+    
+    // Additional deduction: Wrong block (-20%)
+    if (row.wrong_block === 'YES') {
+      justifications.push('Falscher Frageblock: -20 Prozentpunkte');
+    }
+    
+    // Additional deduction: More wrong than correct answers (-10%)
+    const correctPts = row.correct_answers_points ?? 0;
+    const wrongPts = row.false_answers_points ?? 0;
+    if (wrongPts > correctPts) {
+      justifications.push('Mehr falsche als richtige Antworten: -10 Prozentpunkte');
+    }
+    
+    return justifications.join('; ');
+  }
+
   function generateCombinedGrades() {
     if (!extractedRows.length && !rankingRows.length) {
       setGradesStatus('Bitte zuerst Daten in Bereich 2 und/oder 3 extrahieren.');
@@ -593,6 +652,9 @@
 
       // Calculate automatic grade
       row.automatic_grade = calculateAutomaticGrade(row);
+      
+      // Generate automatic justification for deductions
+      row.justification = generateAutomaticJustification(row);
 
       combined.push(row);
     }
