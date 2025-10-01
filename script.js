@@ -727,20 +727,39 @@
       tdCheckbox.appendChild(checkbox);
       tr.appendChild(tdCheckbox);
 
+      // Combine columns
+      // 1. Punkte veröffentlichte Fragen (Anzahl)
+      const publishedDisplay = r.published_question_points != null 
+        ? `${r.published_question_points}${r.question_count != null ? ' (' + r.question_count + ')' : ''}`
+        : '';
+      
+      // 2. Punkte Sterne (Ø Bewertung)
+      const ratingDisplay = (() => {
+        if (r.rating_points == null) return '';
+        if (r.avg_rate != null && r.avg_rate !== r.rating_points) {
+          return `${r.rating_points} (${r.avg_rate})`;
+        }
+        return String(r.rating_points);
+      })();
+      
+      // 3. Punkte Antworten: Gesamt (R: richtig / F: falsch)
+      const answersDisplay = (() => {
+        if (r.total_answers_points == null) return '';
+        const correct = r.correct_answers_points ?? 0;
+        const wrong = r.false_answers_points ?? 0;
+        return `${r.total_answers_points} (R: ${correct} / F: ${wrong})`;
+      })();
+
       const cells = [
         { val: r.student_name, key: 'student_name' },
         { val: r.automatic_grade, key: 'automatic_grade' },
         { val: r.manual_grade, key: 'manual_grade' },
         { val: r.justification, key: 'justification' },
-        { val: r.question_count, key: 'question_count' },
-        { val: r.rating_points, key: 'rating_points' },
-        { val: r.published_question_points, key: 'published_question_points' },
-        { val: r.total_answers_points, key: 'total_answers_points' },
+        { val: publishedDisplay, key: 'published_question_points', sortVal: r.published_question_points },
+        { val: ratingDisplay, key: 'rating_points', sortVal: r.rating_points },
+        { val: answersDisplay, key: 'total_answers_points', sortVal: r.total_answers_points },
         { val: r.total_comments, key: 'total_comments' },
-        { val: r.avg_rate, key: 'avg_rate' },
         { val: r.avg_difficultylevel, key: 'avg_difficultylevel' },
-        { val: r.correct_answers_points, key: 'correct_answers_points' },
-        { val: r.false_answers_points, key: 'false_answers_points' },
         { val: r.wrong_block, key: 'wrong_block' }
       ];
 

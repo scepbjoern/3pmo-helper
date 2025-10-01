@@ -248,6 +248,16 @@ textarea {
   font-weight: bold;
 }
 
+/* Grades table - smaller font */
+#gradesTable {
+  font-size: 0.85em;
+}
+
+#gradesTable td[data-field="justification"] .editable-cell,
+#gradesTable td:nth-child(6) {
+  font-size: 0.75em;
+}
+
 /* Test management */
 .test-management {
   margin-top: 2rem;
