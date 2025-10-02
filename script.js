@@ -1978,12 +1978,14 @@
         // Special widths for specific columns
         if (idx === 4) maxLen = Math.max(maxLen, 50); // Begründung
         if (idx === 10) maxLen = Math.max(maxLen, 30); // Beantw./Bew. Fragen
-        return { wch: Math.min(100, maxLen + 2) };
+        // Reduce Begründung column width by 25%
+        const width = (idx === 4) ? (maxLen + 2) * 0.75 : (maxLen + 2);
+        return { wch: Math.min(100, width) };
       });
       ws['!cols'] = cols;
 
       // Freeze first row
-      ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+      ws['!freeze'] = { xSplit: "1", ySplit: "1", topLeftCell: "A2", activePane: "bottomRight", state: "frozen" };
 
       // Get range
       const range = XLSX.utils.decode_range(ws['!ref']);
