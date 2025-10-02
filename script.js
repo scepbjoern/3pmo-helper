@@ -1992,8 +1992,9 @@
       for (let C = range.s.c; C <= range.e.c; ++C) {
         const addr = XLSX.utils.encode_cell({ r: 0, c: C });
         if (ws[addr]) {
-          ws[addr].s = ws[addr].s || {};
-          ws[addr].s.font = { bold: true };
+          ws[addr].s = {
+            font: { bold: true }
+          };
         }
       }
       
@@ -2002,9 +2003,10 @@
       for (let R = 1; R <= range.e.r; ++R) {
         const addr = XLSX.utils.encode_cell({ r: R, c: begColIdx });
         if (ws[addr]) {
-          ws[addr].s = ws[addr].s || {};
-          ws[addr].s.font = { sz: 9 }; // Smaller font size
-          ws[addr].s.alignment = { wrapText: true, vertical: 'top' }; // Wrap text
+          ws[addr].s = {
+            font: { sz: 9 },
+            alignment: { wrapText: true, vertical: 'top' }
+          };
         }
       }
     } catch (e) {
