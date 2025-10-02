@@ -633,7 +633,7 @@
       justifications.push('Mehr falsche als richtige Antworten: -10%');
     }
     
-    return justifications.join('; ');
+    return justifications.map(j => '* ' + j).join('\n');
   }
 
   function generateCombinedGrades() {
@@ -955,7 +955,7 @@
         if (cell.key === 'manual_grade') {
           td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="manual_grade" data-placeholder="...">${cell.val || ''}</div>`;
         } else if (cell.key === 'justification') {
-          td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="...">${cell.val || ''}</div>`;
+          td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="...">${(cell.val || '').replace(/\n/g, '<br>')}</div>`;
         } else if (cell.val == null || cell.val === '') {
           // Show "-" for question_count and rating_points, "MISSING" for others
           if (cell.key === 'question_count' || cell.key === 'rating_points') {

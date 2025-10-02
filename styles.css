@@ -99,6 +99,7 @@ button:hover { filter: brightness(1.08); }
   height: 6px;
   background: var(--border);
   border-radius: 3px;
+  white-space: pre-wrap;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
@@ -303,6 +304,7 @@ textarea {
   padding: 0.25rem 0.5rem;
   border: 1px solid transparent;
   border-radius: 3px;
+  white-space: pre-wrap;
   transition: all 0.2s;
 }
 .editable-cell:hover {
