@@ -1619,10 +1619,11 @@
     
     const manualGrades = {};
     combinedGradesData.forEach(row => {
-      if (row.manual_grade || row.justification) {
+      if (row.manual_grade || row.justification || row.requiresManualReview) {
         manualGrades[row.student_name] = {
           manual_grade: row.manual_grade || null,
-          justification: row.justification || ''
+          justification: row.justification || '',
+          requiresManualReview: row.requiresManualReview || false
         };
       }
     });

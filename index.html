@@ -28,10 +28,12 @@
           <p class="hint">Willkommen beim StudentQuiz-Bewertungs-Wizard. Folgen Sie diesen Schritten:</p>
           <ol>
             <li><strong>Test auswählen/anlegen:</strong> Wählen Sie einen bestehenden Test oder legen Sie einen neuen an.</li>
-            <li><strong>StudentQuiz-Tabelle extrahieren:</strong> Kopieren Sie die HTML-Tabelle aus dem Reiter "StudentQuiz" der Moodle-Aktivität und extrahieren Sie die relevanten Fragendaten.</li>
-            <li><strong>Rangliste-Tabelle extrahieren:</strong> Kopieren Sie die HTML-Tabelle aus dem Reiter "Rangliste" der Moodle-Aktivität und extrahieren Sie die Studierendenleistungen.</li>
+            <li><strong>Optional:</strong> Studierenden‑Hilfstabelle hochladen (global gespeichert; gilt für alle Tests).</li>
+            <li><strong>Optional:</strong> Zuteilungstabelle für den aktuellen Test laden (testspezifisch gespeichert).</li>
+            <li><strong>StudentQuiz‑Tabelle extrahieren:</strong> Kopieren Sie die HTML‑Tabelle aus dem Reiter "StudentQuiz" der Moodle‑Aktivität und extrahieren Sie die relevanten Fragendaten.</li>
+            <li><strong>Rangliste‑Tabelle extrahieren:</strong> Kopieren Sie die HTML‑Tabelle aus dem Reiter "Rangliste" der Moodle‑Aktivität und extrahieren Sie die Studierendenleistungen.</li>
             <li><strong>Bewertungen:</strong> Automatische Bewertung wird berechnet. Sie können manuelle Anpassungen und Begründungen direkt in der Tabelle eingeben (werden automatisch gespeichert).</li>
-            <li><strong>Export:</strong> Laden Sie die finalen Bewertungen als Excel-Datei herunter.</li>
+            <li><strong>Export:</strong> Laden Sie die finalen Bewertungen als Excel‑Datei herunter.</li>
           </ol>
 
           <div class="test-management">
@@ -54,10 +56,13 @@
             <details class="note">
               <summary>Hinweis zur Datenspeicherung</summary>
               <ul>
-                <li><strong>Automatisches Speichern:</strong> Änderungen an manuellen Bewertungen werden automatisch im Browser (LocalStorage) gespeichert.</li>
-                <li><strong>Test exportieren:</strong> Sichern Sie Ihre Daten als JSON-Datei auf Ihrer Festplatte.</li>
-                <li><strong>Test importieren:</strong> Laden Sie eine zuvor exportierte JSON-Datei.</li>
-                <li><strong>Mehrere Tests:</strong> Sie können verschiedene Tests parallel verwalten (z.B. "Test 1", "Test 2").</li>
+                <li><strong>Automatisches Speichern:</strong> Manuelle Bewertungen, Begründungen und „Manuell zu bewerten“ werden <em>pro Test</em> lokal (LocalStorage) gespeichert.</li>
+                <li><strong>Hilfstabellen:</strong> Die Studierenden‑Hilfstabelle wird <em>global</em> gespeichert (gilt für alle Tests).</li>
+                <li><strong>Zuteilung:</strong> Die Zuteilungstabelle wird <em>testspezifisch</em> gespeichert.</li>
+                <li><strong>HTML‑Daten:</strong> Die in Bereich 2/3 eingefügten HTML‑Daten werden <em>pro Test</em> gespeichert und können mit „Gespeicherte Daten löschen“ in den jeweiligen Bereichen entfernt werden.</li>
+                <li><strong>Export/Import (JSON):</strong> Enthält manuelle Noten, Begründungen sowie die Markierung „Manuell zu bewerten“.</li>
+                <li><strong>Test löschen:</strong> Entfernt alle Daten des aktuellen Tests aus dem LocalStorage. Die globale Studierenden‑Hilfstabelle bleibt erhalten.</li>
+                <li><strong>Mehrere Tests:</strong> Sie können verschiedene Tests parallel verwalten (z. B. „Test 1“, „Test 2“).</li>
               </ul>
             </details>
           </div>
@@ -132,6 +137,7 @@
               <li><strong>difficultylevel</strong> wird nur aus <code>data-difficultylevel</code> gelesen. Falls nicht vorhanden, bleibt das Feld leer.</li>
               <li><strong>rate</strong> wird nur aus <code>data-rate</code> gelesen. Falls nicht vorhanden, bleibt das Feld leer.</li>
               <li><strong>comments</strong>: "n.a." wird als 0 gezählt.</li>
+              <li><strong>Speicherung:</strong> Das eingegebene HTML wird <em>pro Test</em> im Browser gespeichert. Mit „Gespeicherte Daten löschen“ können Sie es entfernen.</li>
             </ul>
           </details>
         </div>
@@ -174,6 +180,7 @@
             <ul>
               <li>Die Extraktion erfolgt analog zur StudentQuiz-Tabelle.</li>
               <li>Punktwerte werden als numerische Werte extrahiert.</li>
+              <li><strong>Speicherung:</strong> Das eingegebene HTML wird <em>pro Test</em> im Browser gespeichert. Mit „Gespeicherte Daten löschen“ können Sie es entfernen.</li>
             </ul>
           </details>
         </div>

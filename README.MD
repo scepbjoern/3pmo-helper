@@ -2,7 +2,7 @@
 
 Web‑App für das 3PMo‑Modul (Prozessmodellierung). Sie bündelt aktuell zwei Werkzeuge:
 
-- StudentQuiz‑Extraktor (HTML → Tabelle → Excel)
+- StudentQuiz‑Bewertung (inkl. Extraktion aus StudentQuiz- und Rangliste‑Reiter)
 - Studierenden‑Themenzuteilung (Excel‑Upload → balancierte Zuteilung → Excel)
 
 Die App ist vollständig clientseitig, benötigt keinen Server und kann einfach durch Öffnen der `index.html` genutzt werden.
@@ -13,20 +13,20 @@ Die App ist vollständig clientseitig, benötigt keinen Server und kann einfach 
 
 ## Features
 
-### StudentQuiz‑Extraktor
-- HTML in ein Textfeld einfügen
-- Extraktion pro Tabellenzeile der Felder: `questionname`, `creatorname`, `difficultylevel`, `rate`, `comments`
-- Vorschau in einer Tabelle
-- Export als Excel (.xlsx) via SheetJS oder CSV‑Fallback
+<!-- Ehemalige 'StudentQuiz‑Extraktor' Sektion entfernt; Extraktion ist Teil von 'StudentQuiz‑Bewertung'. -->
 
-Details zur Extraktion:
-- `questionname`: aus `td.questionname` (Label‑Inhalt; Fallback: Text)
-- `creatorname`: aus `td.creatorname` (Datums‑Span wird entfernt)
-- `difficultylevel`: nur aus `data-difficultylevel`
-- `rate`: nur aus `data-rate`
-- `comments`: Zahl aus `td.comment` (`n.a.` → 0)
-
-Export: `3PMo_Helper_StudentQuiz_Extrakt.xlsx` (bzw. CSV‑Fallback)
+### StudentQuiz‑Bewertung
+- Kombination der extrahierten Daten aus Bereich 2 (StudentQuiz) und Bereich 3 (Rangliste)
+- Automatische Bewertung je Studierende/n gemäß Gewichtung 50/25/25 (siehe Abschnitt „Hinweise zur Bewertung“ in der App)
+- Zusätzliche Abzüge: falscher Frageblock (−20), mehr falsche als richtige Antworten (−10)
+- Markierung „Manuell zu bewerten“, wenn definierte Kriterien zutreffen (z. B. Rating < 4, wenig Kommentare, etc.)
+- Direkte Bearbeitung in der Tabelle: `Bew. man.` und `Begründung` sind editierbar; Zeilenumbrüche in Begründungen werden unterstützt
+- „Nur manuell zu Bewertende anzeigen“ Filter und Sortierfunktionen pro Spalte
+- Excel‑Export mit Formatierung (Gitternetzlinien via Zellrahmen, Textumbruch in Spalte Begründung, vertikale Ausrichtung oben)
+- Export filtert Einträge mit `Kürzel = '-'` automatisch heraus und sortiert nach Kürzel
+- Extraktion in Bereich 2: Felder `questionname`, `creatorname`, `difficultylevel` (aus `data-difficultylevel`), `rate` (aus `data-rate`), `comments` (`n.a.` → 0)
+- Extraktion in Bereich 3: Felder `student_name`, `published_question_points`, `rating_points`, `correct_answers_points`, `false_answers_points`
+- Optional: Export der reinen Extraktionsdaten (Bereich 2/3) als Excel, CSV‑Fallback
 
 ### Studierenden‑Themenzuteilung
 - Excel‑Upload mit den Spalten „Kuerzel“, „Klasse“ (weitere Spalten werden ignoriert)
@@ -44,10 +44,11 @@ Export: `3PMo_Helper_StudentQuiz_Extrakt.xlsx` (bzw. CSV‑Fallback)
   - Dateiname: `3PMo_Zuteilung_TestNN.xlsx` (NN zweistellig)
 
 ## Ordnerstruktur
-- `index.html` – UI mit Tabs (Extraktor/Zuteilung) und Script‑Einbindung
+- `index.html` – UI mit Tabs (Bewertung/Zuteilung) und Script‑Einbindung
 - `script.js` – Parsing, Extraktion, Zuteilung, Vorschau, Exporte
 - `styles.css` – Styles (Tabs, Tabellen, Summary)
-- `vendor/xlsx.full.min.js` – lokale SheetJS‑Bibliothek (für XLSX‑Export)
+- `vendor/xlsx.bundle.js` – eingebundene SheetJS‑Bibliothek (für XLSX‑Export)
+- `vendor/xlsx.full.min.js` – alternative/zusätzliche Distribution von SheetJS
 
 ## Quick Start
 - `index.html` im Browser öffnen (Doppelklick)
@@ -64,10 +65,17 @@ Export: `3PMo_Helper_StudentQuiz_Extrakt.xlsx` (bzw. CSV‑Fallback)
 
 ## Nutzung
 
-### StudentQuiz‑Extraktor
-1. HTML der StudentQuiz‑Tabelle ins Textfeld einfügen
-2. „Extrahieren & Vorschau“ klicken
-3. „Als Excel herunterladen“ (oder CSV‑Fallback)
+<!-- Ehemalige 'StudentQuiz‑Extraktor' Nutzungssektion entfernt; die Extraktion erfolgt in den Bereichen 2 und 3 des Bewertungstabs. -->
+
+### StudentQuiz‑Bewertung
+1. In Bereich 1 einen Test anlegen oder laden (Name angeben)
+2. Optional: „Studierenden‑Hilfstabelle“ hochladen (global gespeichert)
+3. Optional: „Zuteilungstabelle für aktuellen Test“ laden (testspezifisch gespeichert)
+4. Bereich 2: StudentQuiz‑HTML einfügen und extrahieren
+5. Bereich 3: Ranglisten‑HTML einfügen und extrahieren
+6. Bereich 4: „Bewertungen generieren“ klicken, anschließend bei Bedarf `Bew. man.` und `Begründung` bearbeiten
+7. Optional: „Nur manuell zu Bewertende anzeigen“ aktivieren
+8. „Bewertungen als Excel herunterladen“
 
 ### Studierenden‑Themenzuteilung
 1. Excel „Kuerzel/Klasse“ hochladen (erstes Tabellenblatt wird gelesen)
@@ -78,7 +86,13 @@ Export: `3PMo_Helper_StudentQuiz_Extrakt.xlsx` (bzw. CSV‑Fallback)
 6. Optional: „Template herunterladen“ erzeugt ein Excel mit den Kopfzeilen „Kuerzel“, „Klasse“
 
 ## Excel‑Export (SheetJS)
-Die App nutzt SheetJS (`vendor/xlsx.full.min.js`). Falls nicht vorhanden, wird automatisch eine CSV erzeugt.
+Die App nutzt SheetJS (in dieser App per `vendor/xlsx.bundle.js` eingebunden). Falls XLSX nicht verfügbar ist, wird automatisch eine CSV erzeugt.
+
+Formatierung im Bewertungs‑Export:
+- Gitternetzlinien (dünne Zellrahmen) für Kopf‑ und Datenzeilen
+- Spalte „Begründung“: kleinerer Font, Textumbruch aktiv, vertikale Ausrichtung oben
+- Alle Zellen: vertikale Ausrichtung oben
+- Zeilen mit `Kürzel = '-'` werden nicht exportiert
 
 Mögliche Download‑Quellen für SheetJS:
 - https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js
@@ -86,8 +100,14 @@ Mögliche Download‑Quellen für SheetJS:
 - https://raw.githubusercontent.com/SheetJS/sheetjs/v0.19.3/dist/xlsx.full.min.js
 
 ## Grenzen
-- Extraktor: funktioniert, solange die HTML‑Struktur (Klassen/Attribute) der StudentQuiz‑Tabelle beibehalten wird
+- Extraktion: funktioniert, solange die HTML‑Struktur (Klassen/Attribute) der StudentQuiz‑Tabelle beibehalten wird
 - `n.a.` wird als 0 gezählt; andere Lokalisierungen können Anpassungen erfordern
 
 ## Datenschutz
-Alle Daten bleiben lokal im Browser. Es findet keine Server‑Verarbeitung statt.
+Alle Daten bleiben lokal im Browser (LocalStorage). Es findet keine Server‑Verarbeitung statt.
+
+Persistenz (Überblick):
+- Pro Test gespeichert: eingegebene HTML‑Extrakte (StudentQuiz/Rangliste), manuelle Bewertungen/Begründungen, Markierung „manuell zu bewerten“, Zuteilungstabelle
+- Global gespeichert: „Studierenden‑Hilfstabelle“, Tabellenhöhe‑Einstellung für Bereich 4
+- „Test löschen“ entfernt alle Daten des aktuellen Tests (die globale Hilfstabelle bleibt erhalten)
+– Export/Import (JSON) enthält: manuelle Noten, Begründungen, „manuell zu bewerten“-Markierung
