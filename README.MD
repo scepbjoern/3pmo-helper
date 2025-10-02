@@ -47,8 +47,9 @@ Die App ist vollständig clientseitig, benötigt keinen Server und kann einfach 
 - `index.html` – UI mit Tabs (Bewertung/Zuteilung) und Script‑Einbindung
 - `script.js` – Parsing, Extraktion, Zuteilung, Vorschau, Exporte
 - `styles.css` – Styles (Tabs, Tabellen, Summary)
-- `vendor/xlsx.bundle.js` – eingebundene SheetJS‑Bibliothek (für XLSX‑Export)
-- `vendor/xlsx.full.min.js` – alternative/zusätzliche Distribution von SheetJS
+- `grading.js` – Bewertungslogik (Gewichtung, automatische Berechnung)
+- `persistence.js` – LocalStorage‑Funktionen (Speichern/Laden von Tests)
+- `vendor/xlsx.bundle.js` – SheetJS‑Bibliothek für XLSX‑Export
 
 ## Quick Start
 - `index.html` im Browser öffnen (Doppelklick)
