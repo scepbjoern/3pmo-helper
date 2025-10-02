@@ -1079,23 +1079,26 @@
       };
     });
 
+    // Filter out rows with Kürzel "-"
+    const filteredData = data.filter(row => row['Kürzel'] !== '-');
+    
     // Sort by Kürzel ascending
-    data.sort((a, b) => {
+    filteredData.sort((a, b) => {
       const kuerzelA = String(a['Kürzel'] || '').toLowerCase();
       const kuerzelB = String(b['Kürzel'] || '').toLowerCase();
       return kuerzelA.localeCompare(kuerzelB, 'de-CH');
     });
 
     if (window.XLSX && XLSX.utils && XLSX.writeFile) {
-      const ws = XLSX.utils.json_to_sheet(data);
+      const ws = XLSX.utils.json_to_sheet(filteredData);
       
       // Apply formatting
-      applyGradesWorksheetFormatting(ws, data);
+      applyGradesWorksheetFormatting(ws, filteredData);
       
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Bewertungen');
       XLSX.writeFile(wb, '3PMo_Helper_Bewertungen.xlsx');
-      setGradesStatus(`Excel exportiert (${data.length} Zeilen).`);
+      setGradesStatus(`Excel exportiert (${filteredData.length} Zeilen, ${data.length - filteredData.length} Zeilen mit Kürzel "-" ausgelassen).`);
     } else {
       const csv = toCSV(data);
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2047,13 +2050,35 @@
       // Get range
       const range = XLSX.utils.decode_range(ws['!ref']);
       
-      // Bold header row
+      // Bold header row with borders
       for (let C = range.s.c; C <= range.e.c; ++C) {
         const addr = XLSX.utils.encode_cell({ r: 0, c: C });
         if (ws[addr]) {
           ws[addr].s = {
-            font: { bold: true }
+            font: { bold: true },
+            border: {
+              top: { style: 'thin', color: { rgb: '000000' } },
+              bottom: { style: 'thin', color: { rgb: '000000' } },
+              left: { style: 'thin', color: { rgb: '000000' } },
+              right: { style: 'thin', color: { rgb: '000000' } }
+            }
           };
+        }
+      }
+      
+      // Add borders to all data cells
+      for (let R = 1; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const addr = XLSX.utils.encode_cell({ r: R, c: C });
+          if (ws[addr]) {
+            ws[addr].s = ws[addr].s || {};
+            ws[addr].s.border = {
+              top: { style: 'thin', color: { rgb: '000000' } },
+              bottom: { style: 'thin', color: { rgb: '000000' } },
+              left: { style: 'thin', color: { rgb: '000000' } },
+              right: { style: 'thin', color: { rgb: '000000' } }
+            };
+          }
         }
       }
       
@@ -2062,10 +2087,9 @@
       for (let R = 1; R <= range.e.r; ++R) {
         const addr = XLSX.utils.encode_cell({ r: R, c: begColIdx });
         if (ws[addr]) {
-          ws[addr].s = {
-            font: { sz: 9 },
-            alignment: { wrapText: true, vertical: 'top' }
-          };
+          ws[addr].s = ws[addr].s || {};
+          ws[addr].s.font = { sz: 9 };
+          ws[addr].s.alignment = { wrapText: true, vertical: 'top' };
         }
       }
     } catch (e) {
