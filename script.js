@@ -28,6 +28,7 @@
     // Grades UI (Bereich 4)
     btnGenerateGrades: $('#btnGenerateGrades'),
     btnDownloadGrades: $('#btnDownloadGrades'),
+    btnCopyStudentGuide: $('#btnCopyStudentGuide'),
     statusGrades: $('#statusGrades'),
     gradesTableBody: $('#gradesTable tbody'),
     gradeFilterButtons: $('#gradeFilterButtons'),
@@ -902,28 +903,19 @@
       tr.appendChild(tdPreview);
 
       // Combine columns
-      // 1. Punkte veröffentlichte Fragen (Anzahl)
-      const publishedDisplay = r.published_question_points != null 
-        ? `${r.published_question_points}${r.question_count != null ? ' (' + r.question_count + ')' : ''}`
-        : '';
+      // 1. Fragen erstellt (nur Anzahl)
+      const questionCount = r.question_count ?? null;
+      const questionCountDisplay = questionCount != null ? questionCount : '';
+      const isQuestionCountInvalid = questionCount != null && questionCount !== 1;
       
-      // 2. Punkte Sterne (Ø Bewertung) - compare with 2 decimals
+      // 2. Erhaltene Bewertung (rating_points / question_count)
       const ratingDisplay = (() => {
-        if (r.rating_points == null) return '';
-        const ratingPts = parseFloat(r.rating_points);
-        const avgRate = r.avg_rate != null ? parseFloat(r.avg_rate) : null;
-        
-        // Format to 2 decimals for comparison
-        const ratingStr = ratingPts.toFixed(2);
-        const avgRateStr = avgRate != null ? avgRate.toFixed(2) : null;
-        
-        if (avgRateStr != null && ratingStr !== avgRateStr) {
-          return `${ratingStr} (${avgRateStr})`;
-        }
-        return ratingStr;
+        if (r.rating_points == null || r.question_count == null || r.question_count === 0) return '';
+        const avgRating = parseFloat(r.rating_points) / parseInt(r.question_count);
+        return avgRating.toFixed(2);
       })();
       
-      // 3. Punkte Antworten: Gesamt (R: richtig / F: falsch)
+      // 3. Beantwortete/Bewertete Fragen: Gesamt (R: richtig / F: falsch)
       const answersDisplay = (() => {
         if (r.total_answers_points == null) return '';
         const correct = r.correct_answers_points ?? 0;
@@ -943,8 +935,8 @@
         { val: r.automatic_grade, key: 'automatic_grade' },
         { val: r.manual_grade, key: 'manual_grade' },
         { val: r.justification, key: 'justification' },
-        { val: publishedDisplay, key: 'published_question_points', sortVal: r.published_question_points },
-        { val: ratingDisplay, key: 'rating_points', sortVal: r.rating_points, rawVal: r.rating_points },
+        { val: questionCountDisplay, key: 'question_count', sortVal: r.question_count, isInvalid: isQuestionCountInvalid },
+        { val: ratingDisplay, key: 'rating_points', sortVal: r.rating_points },
         { val: r.total_comments != null ? r.total_comments : '-', key: 'total_comments' },
         { val: r.avg_difficultylevel != null ? r.avg_difficultylevel : '-', key: 'avg_difficultylevel' },
         { val: wrongBlockDisplay, key: 'wrong_block', rawVal: r.wrong_block },
@@ -971,15 +963,10 @@
           if (cell.key === 'student_name' && r.requiresManualReview) {
             td.innerHTML = `<span class="review-required">${escapeHtml(cell.val)}</span>`;
           }
-          // Color coding for question_count
+          // Question count - red and bold if not 1
           else if (cell.key === 'question_count') {
-            const count = parseInt(cell.val, 10);
-            if (isFlagged) {
-              td.innerHTML = `<span class="review-required">${cell.val}</span>`;
-            } else if (count > 1) {
-              td.innerHTML = `<span class="highlight-violet">${cell.val}</span>`;
-            } else if (count === 0) {
-              td.innerHTML = `<span class="highlight-red">${cell.val}</span>`;
+            if (cell.isInvalid) {
+              td.innerHTML = `<span style="color: #ef4444; font-weight: bold;">${cell.val}</span>`;
             } else {
               td.textContent = cell.val;
             }
@@ -988,14 +975,9 @@
           } else if (cell.key === 'automatic_grade' && cell.val != null) {
             td.textContent = `${cell.val}%`;
           }
-          // Rating points - highlight if < 4
+          // Rating points display (no special highlighting needed)
           else if (cell.key === 'rating_points') {
-            const rawRating = cell.rawVal != null ? parseFloat(cell.rawVal) : null;
-            if (isFlagged || (rawRating != null && rawRating < 4)) {
-              td.innerHTML = `<span class="review-required">${escapeHtml(String(cell.val))}</span>`;
-            } else {
-              td.textContent = cell.val;
-            }
+            td.textContent = cell.val;
           }
           // Wrong block - show YES in red, otherwise just "-"
           else if (cell.key === 'wrong_block') {
@@ -1052,27 +1034,17 @@
     const data = combinedGradesData.map(r => {
       // Format exactly like in the table
       
-      // 1. Punkte veröffentlichte Fragen (Anzahl)
-      const publishedDisplay = r.published_question_points != null 
-        ? `${r.published_question_points}${r.question_count != null ? ' (' + r.question_count + ')' : ''}`
-        : '-';
+      // 1. Fragen erstellt (nur Anzahl)
+      const questionCountDisplay = r.question_count != null ? r.question_count : '-';
       
-      // 2. Punkte Sterne (Ø Bewertung)
+      // 2. Erhaltene Bewertung (rating_points / question_count)
       const ratingDisplay = (() => {
-        if (r.rating_points == null) return '-';
-        const ratingPts = parseFloat(r.rating_points);
-        const avgRate = r.avg_rate != null ? parseFloat(r.avg_rate) : null;
-        
-        const ratingStr = ratingPts.toFixed(2);
-        const avgRateStr = avgRate != null ? avgRate.toFixed(2) : null;
-        
-        if (avgRateStr != null && ratingStr !== avgRateStr) {
-          return `${ratingStr} (${avgRateStr})`;
-        }
-        return ratingStr;
+        if (r.rating_points == null || r.question_count == null || r.question_count === 0) return '-';
+        const avgRating = parseFloat(r.rating_points) / parseInt(r.question_count);
+        return avgRating.toFixed(2);
       })();
       
-      // 3. Punkte Antworten: Gesamt (R: richtig / F: falsch)
+      // 3. Beantwortete/Bewertete Fragen: Gesamt (R: richtig / F: falsch)
       const answersDisplay = (() => {
         if (r.total_answers_points == null) return '-';
         const correct = r.correct_answers_points ?? 0;
@@ -1087,18 +1059,17 @@
       const kuerzel = getKuerzelFromName(r.student_name);
       
       return {
-        'Student': r.student_name,
         'Kürzel': kuerzel || '-',
         'Bew. tot.': r.total_grade != null ? `${r.total_grade}%` : '-',
         'Bew. aut.': r.automatic_grade != null ? `${r.automatic_grade}%` : '-',
         'Bew. man.': r.manual_grade ?? '',
         'Begründung': r.justification ?? '',
-        'Punkte veröffentlichte Fragen': publishedDisplay,
-        'Punkte Sterne': ratingDisplay,
+        'Fragen erstellt': questionCountDisplay,
+        'Erhaltene Bewertung': ratingDisplay,
         'Σ Kommentare': r.total_comments ?? '-',
         'Ø Schwierigkeit': r.avg_difficultylevel ?? '-',
         'Falscher Frageblock': wrongBlockDisplay,
-        'Punkte Antworten': answersDisplay
+        'Beantwortete/Bewertete Fragen': answersDisplay
       };
     });
 
@@ -1121,6 +1092,151 @@
       URL.revokeObjectURL(url);
       setGradesStatus(`CSV exportiert (${data.length} Zeilen).`);
     }
+  }
+
+  function copyStudentGuideToClipboard() {
+    console.log('copyStudentGuideToClipboard called!');
+    const guideHTML = `<div>
+  <h4>Details zur Punktevergabe pro Test</h4>
+  
+  <p>Im <a href="https://moodle.zhaw.ch/mod/folder/view.php?id=1774515&forceview=1" target="_blank">Moodle-Ordner "Bewertungen pro Test"</a> finden Sie pro Test eine Excel-Datei mit den Bewertungen aller Studierenden. Suchen Sie in der Datei nach Ihrem Kürzel, um Ihre individuelle Bewertung zu sehen. Im Folgenden werden die Spalten und die Bewertungslogik erläutert.</p>
+  
+  <h5>📊 Spalten in der Excel-Datei</h5>
+  
+  <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+    <tr style="background-color: #f0f0f0;">
+      <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Spalte</th>
+      <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Bedeutung</th>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Kürzel</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Ihr Studierenden-Kürzel</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Bew. tot.</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Ihre finale Bewertung in %</strong> (automatisch + manuelle Anpassung). Diese wird mit dem Faktor des Tests multipliziert, um Ihre Punkte zu erhalten (Test 1 & 2: Faktor 0.277..., Test 3-9: Faktor 0.55...).</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Bew. aut.</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Automatisch berechnete Bewertung basierend auf Ihren Aktivitäten</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Bew. man.</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Manuelle Anpassung durch Dozierende (z.B. +10% oder -5%)</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Begründung</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Erklärung zu Abzügen oder Anpassungen (siehe Erklärungen unten)</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Fragen erstellt</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Anzahl der von Ihnen erstellten Fragen (erwartet: 1)</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Erhaltene Bewertung</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Durchschnittliche Sternebewertung Ihrer Frage(n) durch andere Studierende</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Σ Kommentare</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Anzahl der Kommentare zu Ihrer Frage</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Ø Schwierigkeit</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Durchschnittliche Schwierigkeit Ihrer Frage (0 = sehr einfach, 1 = sehr schwer). <strong>Hinweis:</strong> Wer in mehreren Tests fast nur sehr einfache Fragen erstellt, erhält einen Gesamtabzug.</td>
+    </tr>
+    <tr style="background-color: #f9f9f9;">
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Falscher Frageblock</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">"YES" = Frage wurde im falschen Themenblock erstellt</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Beantwortete/Bewertete Fragen</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Format: <code>Gesamt (R: richtig / F: falsch)</code> - z.B. "8 (R: 5 / F: 3)"</td>
+    </tr>
+  </table>
+  
+  <h5>📝 Bewertungslogik</h5>
+  
+  <p>Die automatische Bewertung setzt sich aus drei Hauptaspekten plus zusätzliche Abzüge zusammen:</p>
+  
+  <div style="background-color: #e8f4f8; padding: 15px; border-left: 4px solid #0066cc; margin: 15px 0;">
+    <ul style="margin: 0; padding-left: 20px;">
+      <li><strong>Frage erstellt (50%):</strong>
+        <ul style="margin-top: 5px;">
+          <li>0 Fragen = 0%</li>
+          <li>1 Frage = 100%</li>
+          <li>Mehr als 1 Frage = 70% (nur eine Frage erwartet)</li>
+        </ul>
+      </li>
+      <li style="margin-top: 10px;"><strong>Fragebewertung (25%):</strong>
+        <ul style="margin-top: 5px;">
+          <li>≤2 Sterne = 0%</li>
+          <li>5 Sterne = 100%</li>
+          <li>Dazwischen = linear interpoliert</li>
+        </ul>
+      </li>
+      <li style="margin-top: 10px;"><strong>Fragen beantwortet (25%):</strong>
+        <ul style="margin-top: 5px;">
+          <li>0 Fragen beantwortet = 0%</li>
+          <li>≥5 Fragen beantwortet = 100%</li>
+          <li>Dazwischen = linear interpoliert</li>
+        </ul>
+      </li>
+      <li style="margin-top: 10px;"><strong>Falscher Frageblock:</strong> -20% Abzug vom Gesamtergebnis</li>
+      <li style="margin-top: 10px;"><strong>Mehr falsche als richtige Antworten:</strong> -10% Abzug vom Gesamtergebnis</li>
+    </ul>
+  </div>
+  
+  <h5>⚠️ Erklärung der Begründungen</h5>
+  
+  <p>In der Spalte "Begründung" können verschiedene Meldungen stehen. Gewisse Begründungen wurden automatisch erstellt, andere wurden händisch durch die Dozierenden hinzugefügt. Die automatisch erstellten Begründungen erklären, warum Punkte abgezogen wurden:</p>
+  
+  <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 15px 0;">
+    <p style="margin: 0 0 10px 0;"><strong>Automatisch erstellte Begründungen:</strong></p>
+    
+    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Keine Frage erstellt: -50%</code><br>
+    <em>Sie haben keine Frage erstellt, was 50% der Bewertung ausmacht.</em></p>
+    
+    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Keine Frage für Bewertung: -25%</code><br>
+    <em>Ohne Frage können auch keine Bewertungspunkte vergeben werden.</em></p>
+    
+    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">x Fragen erstellt (erwartet: 1): -15%</code><br>
+    <em>Sie haben mehr als eine Frage erstellt, obwohl nur eine erwartet wurde.</em></p>
+    
+    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Fragebewertung X.XX Sterne (erwartet: 5): -Y.Y%</code><br>
+    <em>Ihre Frage wurde mit weniger als 5 Sternen bewertet. Je niedriger die Bewertung, desto höher der Abzug.</em></p>
+    
+    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Fragen beantwortet X (erwartet: ≥5): -Y.Y%</code><br>
+    <em>Sie haben weniger als 5 Fragen beantwortet.</em></p>
+    
+    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Falscher Frageblock: -20%</code><br>
+    <em>Ihre Frage wurde im falschen Themenblock erstellt (nicht dem Ihnen zugeteilten).</em></p>
+    
+    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Mehr falsche als richtige Antworten: -10%</code><br>
+    <em>Sie haben mehr Fragen falsch als richtig beantwortet, was auf ungenügendes Engagement hindeutet.</em></p>
+  </div>
+</div>`;
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(guideHTML).then(() => {
+      setGradesStatus('Studierendenanleitung wurde in die Zwischenablage kopiert! Sie können sie nun in Moodle einfügen.');
+    }).catch(err => {
+      console.error('Fehler beim Kopieren:', err);
+      setGradesStatus('Fehler beim Kopieren in die Zwischenablage. Bitte manuell kopieren.');
+      // Fallback: Create a textarea with the content
+      const textarea = document.createElement('textarea');
+      textarea.value = guideHTML;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        setGradesStatus('Studierendenanleitung wurde in die Zwischenablage kopiert (Fallback-Methode)!');
+      } catch (e) {
+        setGradesStatus('Fehler beim Kopieren. Bitte Browser-Berechtigungen prüfen.');
+      }
+      document.body.removeChild(textarea);
+    });
   }
 
   // --- Editable cells & persistence ---
@@ -2120,6 +2236,16 @@
   // Grades events (Bereich 4)
   if (els.btnGenerateGrades) els.btnGenerateGrades.addEventListener('click', generateCombinedGrades);
   if (els.btnDownloadGrades) els.btnDownloadGrades.addEventListener('click', downloadCombinedGradesExcel);
+  if (els.btnCopyStudentGuide) {
+    console.log('btnCopyStudentGuide found:', els.btnCopyStudentGuide);
+    console.log('btnCopyStudentGuide disabled?', els.btnCopyStudentGuide.disabled);
+    els.btnCopyStudentGuide.addEventListener('click', (e) => {
+      console.log('Click event fired!', e);
+      copyStudentGuideToClipboard();
+    });
+  } else {
+    console.error('btnCopyStudentGuide NOT found!');
+  }
   if (els.btnFilterManual) els.btnFilterManual.addEventListener('click', filterManualReviewOnly);
   if (els.btnShowAll) els.btnShowAll.addEventListener('click', showAllGrades);
   

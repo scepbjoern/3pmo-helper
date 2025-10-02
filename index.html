@@ -185,6 +185,7 @@
           <div class="buttons">
             <button id="btnGenerateGrades" type="button" class="primary" disabled>Bewertungen generieren</button>
             <button id="btnDownloadGrades" type="button" class="success" disabled>Bewertungen als Excel herunterladen</button>
+            <button id="btnCopyStudentGuide" type="button" class="secondary">Studierendenanleitung in Zwischenablage kopieren</button>
           </div>
 
           <div id="statusGrades" class="status" role="status" aria-live="polite"></div>
@@ -211,12 +212,12 @@
                   <th class="sortable" data-sort="automatic_grade">Bew. aut.</th>
                   <th class="sortable" data-sort="manual_grade">Bew. man.</th>
                   <th>Begründung</th>
-                  <th class="sortable" data-sort="published_question_points">Punkte veröffentlichte Fragen¹</th>
-                  <th class="sortable" data-sort="rating_points">Punkte Sterne²</th>
+                  <th class="sortable" data-sort="question_count">Fragen erstellt</th>
+                  <th class="sortable" data-sort="rating_points">Erhaltene Bewertung</th>
                   <th class="sortable" data-sort="total_comments">Σ Kommentare</th>
                   <th class="sortable" data-sort="avg_difficultylevel">Ø Schwierigkeit</th>
                   <th class="sortable" data-sort="wrong_block">Falscher Frageblock</th>
-                  <th class="sortable" data-sort="total_answers_points">Punkte Antworten³</th>
+                  <th class="sortable" data-sort="total_answers_points">Beantwortete/Bewertete Fragen</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -226,9 +227,9 @@
           <details class="note">
             <summary>Hinweise zu den Spalten</summary>
             <ul>
-              <li><strong>¹ Punkte veröffentlichte Fragen:</strong> Zeigt die Punkte für veröffentlichte Fragen an. In Klammern: Anzahl der erstellten Fragen.</li>
-              <li><strong>² Punkte Sterne:</strong> Zeigt die Punkte für Sterne (Bewertungen) an. Wenn die durchschnittliche Bewertung abweicht, wird sie in Klammern angezeigt.</li>
-              <li><strong>³ Punkte Antworten:</strong> Format: Gesamt (R: Richtig / F: Falsch). Zeigt die Gesamtpunkte für Antworten sowie die Aufteilung in richtige und falsche Antworten.</li>
+              <li><strong>Fragen erstellt:</strong> Anzahl der erstellten Fragen. Werte ungleich 1 werden rot und fett dargestellt.</li>
+              <li><strong>Erhaltene Bewertung:</strong> Durchschnittliche Bewertung (Sterne) der erstellten Frage(n). Berechnet als: Summe der Bewertungspunkte / Anzahl Fragen.</li>
+              <li><strong>Beantwortete/Bewertete Fragen:</strong> Format: Gesamt (R: Richtig / F: Falsch). Zeigt die Gesamtpunkte für Antworten sowie die Aufteilung in richtige und falsche Antworten.</li>
             </ul>
           </details>
 
@@ -236,13 +237,15 @@
             <summary>Hinweise zur Bewertung</summary>
             
             <h4>Automatische Bewertung (0-100%)</h4>
-            <p>Gewichtete Gesamtbewertung aus drei Aspekten:</p>
+            <p>Gewichtete Gesamtbewertung aus drei Hauptaspekten plus zusätzliche Abzüge:</p>
             <ul>
               <li><strong>Frage erstellt (50%):</strong> 0 Fragen = 0%, 1 Frage = 100%, mehr als 1 Frage = 70%</li>
               <li><strong>Fragebewertung (25%):</strong> Basierend auf erhaltenen Sternen pro veröffentlichter Frage, normalisiert auf Skala 2-5 (≤2 Sterne = 0%, 5 Sterne = 100%, linear dazwischen)</li>
-              <li><strong>Fragen beantwortet (25%):</strong> Basierend auf Summe der Antwortpunkte, normalisiert auf max. 5 Punkte (≥5 Punkte = 100%)</li>
+              <li><strong>Fragen beantwortet (25%):</strong> Basierend auf Anzahl beantworteter Fragen, normalisiert auf max. 5 Fragen (≥5 Fragen = 100%)</li>
+              <li><strong>Falscher Frageblock:</strong> -20% Abzug vom Gesamtergebnis, wenn Frage im falschen thematischen Block erstellt wurde</li>
+              <li><strong>Mehr falsche als richtige Antworten:</strong> -10% Abzug vom Gesamtergebnis, deutet auf ungenügendes Engagement hin</li>
             </ul>
-            <p><strong>Formel:</strong> 50% × Bewertung_FrageErstellt + 25% × Bewertung_FrageBewertung + 25% × Bewertung_FragenBeantwortung</p>
+            <p><strong>Formel:</strong> (50% × Bewertung_FrageErstellt + 25% × Bewertung_FrageBewertung + 25% × Bewertung_FragenBeantwortung) - Zusätzliche Abzüge</p>
             
             <h4>Automatische Markierung für manuelle Bewertung</h4>
             <p>Ein Eintrag wird automatisch als "Manuell zu bewerten" markiert (rot hervorgehoben), wenn eines der folgenden Kriterien zutrifft:</p>
