@@ -98,7 +98,6 @@
 
           <div class="buttons">
             <button id="btnParse" type="button" class="primary">Extrahieren & Vorschau</button>
-            <button id="btnClear" type="button" class="secondary">Leeren</button>
             <button id="btnDownload" type="button" class="success">Als Excel herunterladen</button>
             <button id="btnClearSavedHtml" type="button" class="secondary" style="display: none;">Gespeicherte Daten löschen</button>
           </div>
@@ -144,7 +143,6 @@
 
           <div class="buttons">
             <button id="btnParseRanking" type="button" class="primary">Extrahieren & Vorschau</button>
-            <button id="btnClearRanking" type="button" class="secondary">Leeren</button>
             <button id="btnDownloadRanking" type="button" class="success">Als Excel herunterladen</button>
             <button id="btnClearSavedRankingHtml" type="button" class="secondary" style="display: none;">Gespeicherte Daten löschen</button>
           </div>
@@ -204,7 +202,7 @@
             <table id="gradesTable">
               <thead>
                 <tr>
-                  <th>Manuell</th>
+                  <th>Man.</th>
                   <th>✏️</th>
                   <th>🔍</th>
                   <th class="sortable" data-sort="student_name" data-order="asc">Student ▲</th>
@@ -214,10 +212,10 @@
                   <th>Begründung</th>
                   <th class="sortable" data-sort="question_count">Fragen erstellt</th>
                   <th class="sortable" data-sort="rating_points">Erhaltene Bewertung</th>
-                  <th class="sortable" data-sort="total_comments">Σ Kommentare</th>
-                  <th class="sortable" data-sort="avg_difficultylevel">Ø Schwierigkeit</th>
+                  <th class="sortable" data-sort="total_comments">Σ Komm.</th>
+                  <th class="sortable" data-sort="avg_difficultylevel">Ø Schw.</th>
                   <th class="sortable" data-sort="wrong_block">Falscher Frageblock</th>
-                  <th class="sortable" data-sort="total_answers_points">Beantwortete/Bewertete Fragen</th>
+                  <th class="sortable" data-sort="total_answers_points">Beantw./Bew. Fragen</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -229,7 +227,7 @@
             <ul>
               <li><strong>Fragen erstellt:</strong> Anzahl der erstellten Fragen. Werte ungleich 1 werden rot und fett dargestellt.</li>
               <li><strong>Erhaltene Bewertung:</strong> Durchschnittliche Bewertung (Sterne) der erstellten Frage(n). Berechnet als: Summe der Bewertungspunkte / Anzahl Fragen.</li>
-              <li><strong>Beantwortete/Bewertete Fragen:</strong> Format: Gesamt (R: Richtig / F: Falsch). Zeigt die Gesamtpunkte für Antworten sowie die Aufteilung in richtige und falsche Antworten.</li>
+              <li><strong>Beantw./Bew. Fragen:</strong> Format: Gesamt (R: Richtig / F: Falsch). Zeigt die Gesamtpunkte für Antworten sowie die Aufteilung in richtige und falsche Antworten.</li>
             </ul>
           </details>
 

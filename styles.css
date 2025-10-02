@@ -52,7 +52,7 @@ button {
   border-radius: 8px;
   cursor: pointer;
 }
-button.primary { background: var(--primary); border-color: #1d4ed8; }
+button.primary { background: var(--primary); border-color: #1d4ed8; color: #ffffff; }
 button.secondary { background: var(--secondary); }
 button.success { background: var(--success); border-color: #15803d; }
 button:hover { filter: brightness(1.08); }
@@ -121,7 +121,9 @@ button:hover { filter: brightness(1.08); }
   border: none;
 }
 
-.note { margin-top: 16px; color: var(--muted); }
+.note { margin-top: 24px; color: var(--muted); }
+.note summary { cursor: pointer; list-style: none; }
+.note summary::-webkit-details-marker { display: none; }
 
 /* Tabs & pages */
 .tabs { display: flex; gap: 10px; margin: 8px 0 16px; flex-wrap: wrap; }
@@ -138,6 +140,7 @@ input[type="text"], input[type="number"], input[type="file"] {
   border: 1px solid var(--border);
   background: #f1f5f9;
   color: var(--text);
+  margin-top: 8px;
 }
 
 /* Summary sections */

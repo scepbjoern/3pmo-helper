@@ -953,9 +953,9 @@
         
         // Handle editable cells first (manual_grade and justification)
         if (cell.key === 'manual_grade') {
-          td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="manual_grade" data-placeholder="Klicken zum Bearbeiten">${cell.val || ''}</div>`;
+          td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="manual_grade" data-placeholder="...">${cell.val || ''}</div>`;
         } else if (cell.key === 'justification') {
-          td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="Klicken zum Bearbeiten">${cell.val || ''}</div>`;
+          td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="...">${cell.val || ''}</div>`;
         } else if (cell.val == null || cell.val === '') {
           td.innerHTML = '<span class="missing">MISSING</span>';
         } else {
@@ -1137,11 +1137,11 @@
       <td style="border: 1px solid #ddd; padding: 10px;">Durchschnittliche Sternebewertung Ihrer Frage(n) durch andere Studierende</td>
     </tr>
     <tr style="background-color: #f9f9f9;">
-      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Σ Kommentare</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Σ Komm.</strong></td>
       <td style="border: 1px solid #ddd; padding: 10px;">Anzahl der Kommentare zu Ihrer Frage</td>
     </tr>
     <tr>
-      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Ø Schwierigkeit</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Ø Schw.</strong></td>
       <td style="border: 1px solid #ddd; padding: 10px;">Durchschnittliche Schwierigkeit Ihrer Frage (0 = sehr einfach, 1 = sehr schwer). <strong>Hinweis:</strong> Wer in mehreren Tests fast nur sehr einfache Fragen erstellt, erhält einen Gesamtabzug.</td>
     </tr>
     <tr style="background-color: #f9f9f9;">
@@ -1149,7 +1149,7 @@
       <td style="border: 1px solid #ddd; padding: 10px;">"YES" = Frage wurde im falschen Themenblock erstellt</td>
     </tr>
     <tr>
-      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Beantwortete/Bewertete Fragen</strong></td>
+      <td style="border: 1px solid #ddd; padding: 10px;"><strong>Beantw./Bew. Fragen</strong></td>
       <td style="border: 1px solid #ddd; padding: 10px;">Format: <code>Gesamt (R: richtig / F: falsch)</code> - z.B. "8 (R: 5 / F: 3)"</td>
     </tr>
   </table>
