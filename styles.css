@@ -127,11 +127,44 @@ button:hover { filter: brightness(1.08); }
 .note summary::-webkit-details-marker { display: none; }
 
 /* Tabs & pages */
-.tabs { display: flex; gap: 10px; margin: 8px 0 16px; flex-wrap: wrap; }
-.tab { background: var(--secondary); }
-.tab.active { background: var(--primary); border-color: #1d4ed8; }
-.page { display: none; }
-.page.active { display: block; }
+.tabs { 
+  display: flex; 
+  gap: 4px; 
+  margin: 0 0 0 0; 
+  border-bottom: 3px solid var(--primary);
+  flex-wrap: wrap; 
+}
+.tab { 
+  background: #e2e8f0;
+  color: var(--muted);
+  padding: 14px 24px;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+  position: relative;
+}
+.tab:hover {
+  background: #cbd5e1;
+  filter: none;
+}
+.tab.active { 
+  background: var(--primary); 
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 -2px 8px rgba(37, 99, 235, 0.2);
+}
+.page { 
+  display: none; 
+  padding-top: 20px;
+}
+.page.active { 
+  display: block; 
+}
 
 /* Inputs for assignment page */
 input[type="text"], input[type="number"], input[type="file"] {
