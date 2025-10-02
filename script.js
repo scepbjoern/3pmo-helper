@@ -981,9 +981,14 @@
           } else if (cell.key === 'automatic_grade' && cell.val != null) {
             td.textContent = `${cell.val}%`;
           }
-          // Rating points display (no special highlighting needed)
+          // Rating points display - mark red if < 4
           else if (cell.key === 'rating_points') {
-            td.textContent = cell.val;
+            const ratingValue = parseFloat(cell.val);
+            if (!isNaN(ratingValue) && ratingValue < 4) {
+              td.innerHTML = `<span style="color: #ef4444; font-weight: bold;">${cell.val}</span>`;
+            } else {
+              td.textContent = cell.val;
+            }
           }
           // Wrong block - show YES in red, otherwise just "-"
           else if (cell.key === 'wrong_block') {
