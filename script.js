@@ -55,6 +55,7 @@
     btnLoadTest: $('#btnLoadTest'),
     btnSaveTest: $('#btnSaveTest'),
     btnImportTest: $('#btnImportTest'),
+    btnDeleteTest: $('#btnDeleteTest'),
     testFileInput: $('#testFileInput'),
     testStatus: $('#testStatus'),
 
@@ -1652,6 +1653,48 @@
     e.target.value = '';
   }
 
+  function deleteCurrentTest() {
+    if (!currentTestName) {
+      setTestStatus('Kein Test geladen. Bitte zuerst einen Test auswählen.');
+      return;
+    }
+    
+    const confirmDelete = confirm(`Möchten Sie den Test "${currentTestName}" wirklich löschen?\n\nAlle gespeicherten Daten (HTML, Bewertungen, manuelle Anpassungen) für diesen Test werden aus dem LocalStorage entfernt.`);
+    
+    if (!confirmDelete) {
+      return;
+    }
+    
+    // Delete all data for this test from LocalStorage
+    deleteTestData(currentTestName);
+    
+    // Clear current state
+    currentTestName = null;
+    setCurrentTestName(null);
+    els.testNameInput.value = '';
+    combinedGradesData = [];
+    extractedRows = [];
+    rankingRows = [];
+    
+    // Clear UI
+    if (els.htmlInput) els.htmlInput.value = '';
+    if (els.htmlInputRanking) els.htmlInputRanking.value = '';
+    if (els.previewTable && els.previewTable.querySelector('tbody')) {
+      els.previewTable.querySelector('tbody').innerHTML = '';
+    }
+    if (els.previewTableRanking && els.previewTableRanking.querySelector('tbody')) {
+      els.previewTableRanking.querySelector('tbody').innerHTML = '';
+    }
+    if (els.gradesTable && els.gradesTable.querySelector('tbody')) {
+      els.gradesTable.querySelector('tbody').innerHTML = '';
+    }
+    
+    setTestStatus('Test wurde gelöscht.');
+    setStatus('');
+    setStatusRanking('');
+    setGradesStatus('');
+  }
+
   // --- Tabs ---
   function showPage(which) {
     const isSQ = which === 'sq';
@@ -2354,6 +2397,7 @@
   if (els.btnLoadTest) els.btnLoadTest.addEventListener('click', loadExistingTest);
   if (els.btnSaveTest) els.btnSaveTest.addEventListener('click', exportTest);
   if (els.btnImportTest) els.btnImportTest.addEventListener('click', importTest);
+  if (els.btnDeleteTest) els.btnDeleteTest.addEventListener('click', deleteCurrentTest);
   if (els.testFileInput) els.testFileInput.addEventListener('change', handleTestFileImport);
 
   // Tabs
