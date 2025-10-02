@@ -1668,13 +1668,19 @@
     // Delete all data for this test from LocalStorage
     deleteTestData(currentTestName);
     
+    // Delete assignment table for this test
+    const assignmentKey = `3pmo_assignment_${currentTestName}`;
+    localStorage.removeItem(assignmentKey);
+    
     // Clear current state
+    const deletedTestName = currentTestName;
     currentTestName = null;
     setCurrentTestName(null);
     els.testNameInput.value = '';
     combinedGradesData = [];
     extractedRows = [];
     rankingRows = [];
+    assignmentData = [];
     
     // Clear UI
     if (els.htmlInput) els.htmlInput.value = '';
@@ -1689,7 +1695,15 @@
       els.gradesTable.querySelector('tbody').innerHTML = '';
     }
     
-    setTestStatus('Test wurde gelöscht.');
+    // Clear assignment UI
+    if (els.statusAssignment) {
+      els.statusAssignment.textContent = '';
+    }
+    if (els.btnClearAssignment) {
+      els.btnClearAssignment.style.display = 'none';
+    }
+    
+    setTestStatus(`Test "${deletedTestName}" wurde gelöscht (inkl. Zuteilungstabelle).`);
     setStatus('');
     setStatusRanking('');
     setGradesStatus('');
