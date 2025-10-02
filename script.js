@@ -2066,7 +2066,7 @@
         }
       }
       
-      // Add borders to all data cells
+      // Add borders and vertical alignment to all data cells
       for (let R = 1; R <= range.e.r; ++R) {
         for (let C = range.s.c; C <= range.e.c; ++C) {
           const addr = XLSX.utils.encode_cell({ r: R, c: C });
@@ -2078,6 +2078,7 @@
               left: { style: 'thin', color: { rgb: '000000' } },
               right: { style: 'thin', color: { rgb: '000000' } }
             };
+            ws[addr].s.alignment = { vertical: 'top' };
           }
         }
       }
