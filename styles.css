@@ -253,9 +253,22 @@ textarea {
   font-size: 0.85em;
 }
 
-/* Begründung column - smaller font (6th column) */
-#gradesTable td:nth-child(6) {
+/* Begründung column - smaller font (8th column after adding icons) */
+#gradesTable td:nth-child(8) {
   font-size: 0.75em;
+}
+
+/* Action icons (edit/preview) */
+.action-icon {
+  font-size: 1.2em;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.action-icon:hover {
+  transform: scale(1.2);
 }
 
 /* Test management */

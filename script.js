@@ -183,6 +183,7 @@
       const tdDiff = $('td.difficultylevel', tr);
       const tdRate = $('td.rates', tr);
       const tdComment = $('td.comment', tr);
+      const tdEditMenu = $('td.editmenu', tr);
       if (!tdQ && !tdCreator && !tdDiff && !tdRate && !tdComment) return;
 
       const qHTML = tdQ ? tdQ.innerHTML : '';
@@ -190,6 +191,7 @@
       const diffHTML = tdDiff ? tdDiff.innerHTML : '';
       const rateHTML = tdRate ? tdRate.innerHTML : '';
       const commentHTML = tdComment ? tdComment.innerHTML : '';
+      const editMenuHTML = tdEditMenu ? tdEditMenu.innerHTML : '';
 
       // questionname via regex on label, fallback to text
       let questionname = extractWithRegex(qHTML, [
@@ -226,12 +228,34 @@
         comments = m ? parseInt(m[1], 10) : 0;
       }
 
+      // Extract edit URL: look for link containing "editquestion" in href
+      let editUrl = '';
+      const editHrefMatch = editMenuHTML.match(/href="([^"]*editquestion[^"]*)"/i);
+      if (editHrefMatch) {
+        editUrl = editHrefMatch[1].replace(/&amp;/g, '&');
+        console.log('Edit URL found:', editUrl);
+      } else {
+        console.log('Edit URL NOT found in:', editMenuHTML.substring(0, 200));
+      }
+
+      // Extract preview URL: look for link containing "preview.php" in href
+      let previewUrl = '';
+      const previewHrefMatch = editMenuHTML.match(/href="([^"]*preview\.php[^"]*)"/i);
+      if (previewHrefMatch) {
+        previewUrl = previewHrefMatch[1].replace(/&amp;/g, '&');
+        console.log('Preview URL found:', previewUrl);
+      } else {
+        console.log('Preview URL NOT found');
+      }
+
       const row = {
         questionname: questionname || '',
         creatorname: creatorname || '',
         difficultylevel: difficultylevel || '',
         rate: rate || '',
-        comments
+        comments,
+        editUrl: editUrl || '',
+        previewUrl: previewUrl || ''
       };
 
       // Only add if at least questionname present
@@ -259,13 +283,61 @@
     const fragment = document.createDocumentFragment();
     rows.forEach(r => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${escapeHtml(r.questionname)}</td>
-        <td>${escapeHtml(r.creatorname)}</td>
-        <td>${escapeHtml(r.difficultylevel)}</td>
-        <td>${escapeHtml(r.rate)}</td>
-        <td>${escapeHtml(r.comments)}</td>
-      `;
+      
+      // Edit icon cell
+      const tdEdit = document.createElement('td');
+      tdEdit.style.textAlign = 'center';
+      if (r.editUrl) {
+        const editLink = document.createElement('a');
+        editLink.href = r.editUrl;
+        editLink.target = '_blank';
+        editLink.innerHTML = '✏️';
+        editLink.title = 'Frage bearbeiten';
+        editLink.className = 'action-icon';
+        tdEdit.appendChild(editLink);
+      } else {
+        tdEdit.textContent = '-';
+      }
+      
+      // Preview icon cell
+      const tdPreview = document.createElement('td');
+      tdPreview.style.textAlign = 'center';
+      if (r.previewUrl) {
+        const previewLink = document.createElement('a');
+        previewLink.href = r.previewUrl;
+        previewLink.target = 'questionpreview';
+        previewLink.innerHTML = '🔍';
+        previewLink.title = 'Vorschau';
+        previewLink.className = 'action-icon';
+        tdPreview.appendChild(previewLink);
+      } else {
+        tdPreview.textContent = '-';
+      }
+      
+      tr.appendChild(tdEdit);
+      tr.appendChild(tdPreview);
+      
+      // Other cells
+      const tdQuestionName = document.createElement('td');
+      tdQuestionName.textContent = r.questionname;
+      tr.appendChild(tdQuestionName);
+      
+      const tdCreatorName = document.createElement('td');
+      tdCreatorName.textContent = r.creatorname;
+      tr.appendChild(tdCreatorName);
+      
+      const tdDifficulty = document.createElement('td');
+      tdDifficulty.textContent = r.difficultylevel;
+      tr.appendChild(tdDifficulty);
+      
+      const tdRate = document.createElement('td');
+      tdRate.textContent = r.rate;
+      tr.appendChild(tdRate);
+      
+      const tdComments = document.createElement('td');
+      tdComments.textContent = r.comments;
+      tr.appendChild(tdComments);
+      
       fragment.appendChild(tr);
     });
     els.tableBody.appendChild(fragment);
@@ -286,7 +358,9 @@
       creatorname: r.creatorname,
       difficultylevel: r.difficultylevel,
       rate: r.rate,
-      comments: r.comments
+      comments: r.comments,
+      editUrl: r.editUrl || '',
+      previewUrl: r.previewUrl || ''
     }));
   }
 
@@ -638,6 +712,8 @@
         avg_difficultylevel: avgDifficulty,
         avg_rate: avgRate,
         total_comments: totalComments > 0 ? totalComments : null,
+        editUrl: sqData.length > 0 ? sqData[0].editUrl : null,
+        previewUrl: sqData.length > 0 ? sqData[0].previewUrl : null,
         // From Bereich 3 (Rangliste)
         published_question_points: rankData ? rankData.published_question_points : null,
         rating_points: rankData ? rankData.rating_points : null,
@@ -792,6 +868,38 @@
       // Event listener will be attached via delegation, not per checkbox
       tdCheckbox.appendChild(checkbox);
       tr.appendChild(tdCheckbox);
+
+      // Edit icon cell
+      const tdEdit = document.createElement('td');
+      tdEdit.style.textAlign = 'center';
+      if (r.editUrl) {
+        const editLink = document.createElement('a');
+        editLink.href = r.editUrl;
+        editLink.target = '_blank';
+        editLink.innerHTML = '✏️';
+        editLink.title = 'Frage bearbeiten';
+        editLink.className = 'action-icon';
+        tdEdit.appendChild(editLink);
+      } else {
+        tdEdit.textContent = '-';
+      }
+      tr.appendChild(tdEdit);
+
+      // Preview icon cell
+      const tdPreview = document.createElement('td');
+      tdPreview.style.textAlign = 'center';
+      if (r.previewUrl) {
+        const previewLink = document.createElement('a');
+        previewLink.href = r.previewUrl;
+        previewLink.target = 'questionpreview';
+        previewLink.innerHTML = '🔍';
+        previewLink.title = 'Vorschau';
+        previewLink.className = 'action-icon';
+        tdPreview.appendChild(previewLink);
+      } else {
+        tdPreview.textContent = '-';
+      }
+      tr.appendChild(tdPreview);
 
       // Combine columns
       // 1. Punkte veröffentlichte Fragen (Anzahl)
