@@ -27,9 +27,9 @@
         <div class="wizard-content">
           <p class="hint">Willkommen beim StudentQuiz-Bewertungs-Wizard. Folgen Sie diesen Schritten:</p>
           <ol>
-            <li><strong>Test auswählen/anlegen:</strong> Wählen Sie einen bestehenden Test oder legen Sie einen neuen an.</li>
-            <li><strong>Optional:</strong> Studierenden‑Hilfstabelle hochladen (global gespeichert; gilt für alle Tests).</li>
-            <li><strong>Optional:</strong> Zuteilungstabelle für den aktuellen Test laden (testspezifisch gespeichert).</li>
+            <li><strong>Test auswählen/anlegen:</strong> Wählen Sie einen bestehenden Test oder legen Sie einen neuen an. <em>Zwischen Tests wechseln:</em> Testnamen eingeben und „Test laden“ klicken. „Neuer Test“ erstellt einen neuen Test.</li>
+            <li><strong>Studierenden‑Hilfstabelle hochladen:</strong> Global gespeichert; gilt für alle Tests.</li>
+            <li><strong>Zuteilungstabelle für den aktuellen Test laden:</strong> Testspezifisch gespeichert.</li>
             <li><strong>StudentQuiz‑Tabelle extrahieren:</strong> Kopieren Sie die HTML‑Tabelle aus dem Reiter "StudentQuiz" der Moodle‑Aktivität und extrahieren Sie die relevanten Fragendaten.</li>
             <li><strong>Rangliste‑Tabelle extrahieren:</strong> Kopieren Sie die HTML‑Tabelle aus dem Reiter "Rangliste" der Moodle‑Aktivität und extrahieren Sie die Studierendenleistungen.</li>
             <li><strong>Bewertungen:</strong> Automatische Bewertung wird berechnet. Sie können manuelle Anpassungen und Begründungen direkt in der Tabelle eingeben (werden automatisch gespeichert).</li>
@@ -62,7 +62,7 @@
                 <li><strong>HTML‑Daten:</strong> Die in Bereich 2/3 eingefügten HTML‑Daten werden <em>pro Test</em> gespeichert und können mit „Gespeicherte Daten löschen“ in den jeweiligen Bereichen entfernt werden.</li>
                 <li><strong>Export/Import (JSON):</strong> Enthält manuelle Noten, Begründungen sowie die Markierung „Manuell zu bewerten“.</li>
                 <li><strong>Test löschen:</strong> Entfernt alle Daten des aktuellen Tests aus dem LocalStorage. Die globale Studierenden‑Hilfstabelle bleibt erhalten.</li>
-                <li><strong>Mehrere Tests:</strong> Sie können verschiedene Tests parallel verwalten (z. B. „Test 1“, „Test 2“).</li>
+                <li><strong>Mehrere Tests:</strong> Sie können verschiedene Tests parallel verwalten (z. B. „Test 1“, „Test 2“). <em>Wechsel:</em> Testnamen eingeben und „Test laden“ klicken. „Neuer Test“ erstellt einen neuen Test.</li>
               </ul>
             </details>
           </div>
@@ -237,9 +237,19 @@
           <details class="note">
             <summary>Hinweise zu den Spalten</summary>
             <ul>
-              <li><strong>Fragen erstellt:</strong> Anzahl der erstellten Fragen. Werte ungleich 1 werden rot und fett dargestellt.</li>
-              <li><strong>Erhaltene Bewertung:</strong> Durchschnittliche Bewertung (Sterne) der erstellten Frage(n). Berechnet als: Summe der Bewertungspunkte / Anzahl Fragen.</li>
-              <li><strong>Beantw./Bew. Fragen:</strong> Format: Gesamt (R: Richtig / F: Falsch). Zeigt die Gesamtpunkte für Antworten sowie die Aufteilung in richtige und falsche Antworten.</li>
+              <li><strong>Man.:</strong> Checkbox „Manuell zu bewerten“. Aktiviert/Deaktiviert die Markierung und Filterbarkeit.</li>
+              <li><strong>✏️ / 🔍:</strong> Direktlinks zum Bearbeiten bzw. zur Vorschau der Frage (falls vorhanden).</li>
+              <li><strong>Student:</strong> Anzeigename der/des Studierenden. Einträge, die „Manuell zu bewerten“ sind, werden hervorgehoben.</li>
+              <li><strong>Bew. tot.:</strong> Finale Bewertung in % (automatisch + manuell). Dient als Grundlage für die Punkte pro Test.</li>
+              <li><strong>Bew. aut.:</strong> Automatisch berechnete Bewertung basierend auf Aktivitäten (Frage erstellt, Bewertung der Frage, beantwortete Fragen).</li>
+              <li><strong>Bew. man.:</strong> Manuelle Anpassung in % (z. B. +10 oder −5). Wird zur automatischen Bewertung addiert.</li>
+              <li><strong>Begründung:</strong> Erklärung zu Abzügen/Anpassungen. Zeilenumbrüche werden unterstützt; im Excel ist Umbruch aktiviert.</li>
+              <li><strong>Fragen erstellt:</strong> Anzahl der erstellten Fragen (erwartet: 1). Werte ungleich 1 werden rot und fett dargestellt.</li>
+              <li><strong>Erhaltene Bewertung:</strong> Durchschnittliche Sternebewertung der erstellten Frage(n). Werte < 4 werden rot markiert.</li>
+              <li><strong>Σ Komm.:</strong> Anzahl der Kommentare/Bewertungen zu der Frage.</li>
+              <li><strong>Ø Schw.:</strong> Durchschnittliche Schwierigkeit (0 = sehr einfach, 1 = sehr schwer).</li>
+              <li><strong>Falscher Frageblock:</strong> „YES“ = Frage im falschen Themenblock (rot hervorgehoben).</li>
+              <li><strong>Beantw./Bew. Fragen:</strong> Punkte für Antworten, mit Aufteilung: Gesamt (R: richtig / F: falsch).</li>
             </ul>
           </details>
 
@@ -263,14 +273,13 @@
               <li><strong>Mehr als eine Frage erstellt:</strong> Anzahl Fragen > 1 (ungewöhnlich, könnte auf Fehler hindeuten)</li>
               <li><strong>Punkte Sterne < 4:</strong> Niedrige Bewertung der erstellten Frage(n), deutet auf Qualitätsprobleme hin</li>
               <li><strong>Σ Kommentare < 3:</strong> Zu wenige Bewertungen der Frage (< 3 Studierende), daher ist die Aussagekraft der Punkte Sterne nicht ausreichend. Die Qualität der Frage muss manuell geprüft werden</li>
-              <li><strong>Punkte Antworten < 5:</strong> Zu wenig Engagement beim Beantworten von Fragen (25% der Bewertung)</li>
               <li><strong>Mehr falsche als richtige Antworten:</strong> Deutet darauf hin, dass der Studierende möglicherweise geraten hat statt die Fragen ernsthaft zu beantworten (erkennbar an geringer investierter Zeit)</li>
               <li><strong>Falscher Frageblock:</strong> Frage wurde im falschen thematischen Block erstellt (Zuteilungsfehler)</li>
             </ul>
             <p><strong>Zweck:</strong> Diese Kriterien helfen dabei, Studierende zu identifizieren, die besondere Aufmerksamkeit benötigen oder bei denen die automatische Bewertung möglicherweise nicht angemessen ist.</p>
             
             <h4>Manuelle Bewertung</h4>
-            <p>Kann verwendet werden, um die automatische Bewertung zu überschreiben. Begründungen helfen bei der Nachvollziehbarkeit und Transparenz gegenüber den Studierenden.</p>
+            <p>Nutzen Sie die Spalten <strong>„Bew. man.“</strong> (Anpassung in %, z. B. +10 oder −5) und <strong>„Begründung“</strong> (Text) zur fachlichen Korrektur. Setzen Sie manuelle Kommentare <em>unter</em> die automatischen Begründungen, beginnen Sie mit einem Zeilenumbruch und einem Stern (<code>*</code>), z. B.:<br>„<code>* Nach Sichtung der Frage Qualität dennoch ausreichend</code>“.</p>
           </details>
         </div>
       </details>

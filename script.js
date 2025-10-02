@@ -814,13 +814,7 @@
         }
       }
       
-      // Criterion 3: Total answers points > 0 but < 5 (only if value exists)
-      if (isValid(student.total_answers_points)) {
-        const totalAnswersPoints = parseFloat(student.total_answers_points);
-        if (!isNaN(totalAnswersPoints) && totalAnswersPoints > 0 && totalAnswersPoints < 5) {
-          flags.push('total_answers_points');
-        }
-      }
+      // Criterion 3 REMOVED: Total answers points < 5 should NOT trigger manual review
       
       // Criterion 4: Total comments < 3 (only if value exists)
       if (isValid(student.total_comments)) {
