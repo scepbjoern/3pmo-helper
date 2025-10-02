@@ -957,7 +957,12 @@
         } else if (cell.key === 'justification') {
           td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="...">${cell.val || ''}</div>`;
         } else if (cell.val == null || cell.val === '') {
-          td.innerHTML = '<span class="missing">MISSING</span>';
+          // Show "-" for question_count and rating_points, "MISSING" for others
+          if (cell.key === 'question_count' || cell.key === 'rating_points') {
+            td.textContent = '-';
+          } else {
+            td.innerHTML = '<span class="missing">MISSING</span>';
+          }
         } else {
           // Student name - mark red if requires manual review
           if (cell.key === 'student_name' && r.requiresManualReview) {
@@ -1066,15 +1071,26 @@
         'Begründung': r.justification ?? '',
         'Fragen erstellt': questionCountDisplay,
         'Erhaltene Bewertung': ratingDisplay,
-        'Σ Kommentare': r.total_comments ?? '-',
-        'Ø Schwierigkeit': r.avg_difficultylevel ?? '-',
+        'Σ Komm.': r.total_comments ?? '-',
+        'Ø Schw.': r.avg_difficultylevel ?? '-',
         'Falscher Frageblock': wrongBlockDisplay,
-        'Beantwortete/Bewertete Fragen': answersDisplay
+        'Beantw./Bew. Fragen': answersDisplay
       };
+    });
+
+    // Sort by Kürzel ascending
+    data.sort((a, b) => {
+      const kuerzelA = String(a['Kürzel'] || '').toLowerCase();
+      const kuerzelB = String(b['Kürzel'] || '').toLowerCase();
+      return kuerzelA.localeCompare(kuerzelB, 'de-CH');
     });
 
     if (window.XLSX && XLSX.utils && XLSX.writeFile) {
       const ws = XLSX.utils.json_to_sheet(data);
+      
+      // Apply formatting
+      applyGradesWorksheetFormatting(ws, data);
+      
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Bewertungen');
       XLSX.writeFile(wb, '3PMo_Helper_Bewertungen.xlsx');
@@ -1150,7 +1166,7 @@
     </tr>
     <tr>
       <td style="border: 1px solid #ddd; padding: 10px;"><strong>Beantw./Bew. Fragen</strong></td>
-      <td style="border: 1px solid #ddd; padding: 10px;">Format: <code>Gesamt (R: richtig / F: falsch)</code> - z.B. "8 (R: 5 / F: 3)"</td>
+      <td style="border: 1px solid #ddd; padding: 10px;">Anzahl Punkte für das Beantworten und Bewerten von Fragen anderer Studierender. Format: <code>Gesamt (R: richtig / F: falsch)</code> - z.B. "8 (R: 5 / F: 3)" bedeutet 8 Punkte total, davon 5 Punkte für richtige und 3 Punkte für falsche Antworten.</td>
     </tr>
   </table>
   
@@ -1286,6 +1302,10 @@
         recalculateTotalGrade(student);
         // Re-render the row to show updated total_grade
         renderCombinedGradesTable(combinedGradesData);
+        // Re-apply filter if it was active
+        if (isFilterActive) {
+          filterManualReviewOnly();
+        }
       }
       
       // Debounced save - wait 500ms after last edit
@@ -1941,6 +1961,55 @@
     const classes = Array.from(classSet).sort((a, b) => String(a).localeCompare(String(b), 'de-CH', { sensitivity: 'base' }));
     for (const klass of classes) {
       root.appendChild(makeTable(`Zusammenfassung – Klasse ${klass}`, perClass.get(klass)));
+    }
+  }
+
+  function applyGradesWorksheetFormatting(ws, rows) {
+    try {
+      const headers = ['Kürzel', 'Bew. tot.', 'Bew. aut.', 'Bew. man.', 'Begründung', 'Fragen erstellt', 'Erhaltene Bewertung', 'Σ Komm.', 'Ø Schw.', 'Falscher Frageblock', 'Beantw./Bew. Fragen'];
+      
+      // Column widths
+      const cols = headers.map((h, idx) => {
+        let maxLen = h.length;
+        for (const r of rows) {
+          const v = (r[h] == null ? '' : String(r[h]));
+          if (v.length > maxLen) maxLen = v.length;
+        }
+        // Special widths for specific columns
+        if (idx === 4) maxLen = Math.max(maxLen, 50); // Begründung
+        if (idx === 10) maxLen = Math.max(maxLen, 30); // Beantw./Bew. Fragen
+        return { wch: Math.min(100, maxLen + 2) };
+      });
+      ws['!cols'] = cols;
+
+      // Freeze first row
+      ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+      // Get range
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      
+      // Bold header row
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (ws[addr]) {
+          ws[addr].s = ws[addr].s || {};
+          ws[addr].s.font = { bold: true };
+        }
+      }
+      
+      // Format Begründung column (column E, index 4)
+      const begColIdx = 4;
+      for (let R = 1; R <= range.e.r; ++R) {
+        const addr = XLSX.utils.encode_cell({ r: R, c: begColIdx });
+        if (ws[addr]) {
+          ws[addr].s = ws[addr].s || {};
+          ws[addr].s.font = { sz: 9 }; // Smaller font size
+          ws[addr].s.alignment = { wrapText: true, vertical: 'top' }; // Wrap text
+        }
+      }
+    } catch (e) {
+      // non-fatal; formatting is optional
+      console.error('Error applying grades worksheet formatting:', e);
     }
   }
 
