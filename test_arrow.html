@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.note summary { 
+  cursor: pointer; 
+  list-style: none;
+}
+.note summary::-webkit-details-marker { display: none; }
+.note summary::before {
+  content: '▶';
+  display: inline-block;
+  margin-right: 8px;
+  transition: transform 0.2s;
+  color: #2563eb;
+}
+.note[open] summary::before {
+  transform: rotate(90deg);
+}
+</style>
+</head>
+<body>
+<h1>Test: Pfeil-Rotation</h1>
+
+<details class="note">
+  <summary>Klick mich - sollte nach rechts zeigen wenn zu</summary>
+  <p>Inhalt wenn offen - Pfeil sollte nach unten zeigen</p>
+</details>
+
+<br><br>
+
+<details class="note" open>
+  <summary>Dieser ist offen - Pfeil sollte nach unten zeigen</summary>
+  <p>Inhalt</p>
+</details>
+
+</body>
+</html>

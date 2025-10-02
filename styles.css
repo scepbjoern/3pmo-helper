@@ -123,8 +123,43 @@ button:hover { filter: brightness(1.08); }
 }
 
 .note { margin-top: 24px; color: var(--muted); }
-.note summary { cursor: pointer; list-style: none; }
-.note summary::-webkit-details-marker { display: none; }
+details.note summary { 
+  cursor: pointer; 
+  list-style: none;
+}
+details.note summary::-webkit-details-marker { display: none; }
+details.note summary::before {
+  content: '▶';
+  display: inline-block;
+  margin-right: 8px;
+  transition: transform 0.2s;
+  color: var(--primary);
+  transform: rotate(0deg) !important;
+}
+details.note[open] summary::before {
+  transform: rotate(90deg) !important;
+}
+
+/* Upload sections */
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.upload-section label {
+  display: block;
+  margin-bottom: 0;
+}
+.upload-section input[type="file"] {
+  margin-top: 0;
+}
+.upload-section .buttons,
+.upload-section > button {
+  margin-top: 0;
+}
+.upload-section .status {
+  margin-top: 0;
+}
 
 /* Tabs & pages */
 .tabs { 

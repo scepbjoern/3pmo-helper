@@ -68,21 +68,25 @@
             <div class="upload-section">
               <label>
                 <strong>Studierenden-Hilfstabelle</strong> (Kürzel → Vorname Nachname):
-                <input type="file" id="studentHelperFile" accept=".xlsx,.xls" style="margin-left: 8px;">
               </label>
-              <button id="btnUploadStudentHelper" type="button" class="primary">Hochladen</button>
-              <button id="btnClearStudentHelper" type="button" class="secondary" style="display: none;">Daten löschen</button>
-              <div id="statusStudentHelper" class="status" style="margin-top: 8px;"></div>
+              <input type="file" id="studentHelperFile" accept=".xlsx,.xls">
+              <div class="buttons">
+                <button id="btnUploadStudentHelper" type="button" class="primary">Hochladen</button>
+                <button id="btnClearStudentHelper" type="button" class="secondary" style="display: none;">Daten löschen</button>
+              </div>
+              <div id="statusStudentHelper" class="status"></div>
             </div>
 
             <div class="upload-section" style="margin-top: 16px;">
               <label>
                 <strong>Zuteilungstabelle für aktuellen Test</strong> (aus Tab "Studierenden-Themenzuteilung"):
-                <input type="file" id="assignmentFile" accept=".xlsx,.xls" style="margin-left: 8px;">
               </label>
-              <button id="btnUploadAssignment" type="button" class="primary">Hochladen</button>
-              <button id="btnClearAssignment" type="button" class="secondary" style="display: none;">Daten löschen</button>
-              <div id="statusAssignment" class="status" style="margin-top: 8px;"></div>
+              <input type="file" id="assignmentFile" accept=".xlsx,.xls">
+              <div class="buttons">
+                <button id="btnUploadAssignment" type="button" class="primary">Hochladen</button>
+                <button id="btnClearAssignment" type="button" class="secondary" style="display: none;">Daten löschen</button>
+              </div>
+              <div id="statusAssignment" class="status"></div>
             </div>
           </div>
         </div>
