@@ -2369,10 +2369,16 @@
           student.reviewFlags.push('wrong_block');
         }
         // Add to justification
-        const msg = `* Falsch: Frage in Block "${actualBlock}" statt "${expectedBlock}".`;
+        const msg = `* Frage in Block "${actualBlock}" statt "${expectedBlock}": -20%`;
         if (!student.justification || !student.justification.includes(msg)) {
           student.justification = student.justification ? (student.justification + '\n' + msg) : msg;
         }
+        
+        // Recalculate automatic grade with wrong_block penalty
+        student.automatic_grade = calculateAutomaticGrade(student);
+        // Recalculate total grade (preserve manual grade if exists)
+        const manualDelta = (student.manual_grade != null) ? student.manual_grade : 0;
+        student.total_grade = student.automatic_grade + manualDelta;
       } else {
         student.wrong_block = '';
       }
