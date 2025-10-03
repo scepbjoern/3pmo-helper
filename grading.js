@@ -69,12 +69,11 @@ function calculateAutomaticGrade(data) {
     totalGrade -= 20;
   }
   
-  // More wrong than correct answers: -10 percentage points
+  // Progressive penalty for wrong answers based on ratio and count
   const correctPts = data.correct_answers_points ?? 0;
   const wrongPts = data.false_answers_points ?? 0;
-  if (wrongPts > correctPts) {
-    totalGrade -= 10;
-  }
+  const penalty = calculateWrongAnswerPenalty(correctPts, wrongPts);
+  totalGrade -= penalty;
   
   // Ensure grade doesn't go below 0
   totalGrade = Math.max(0, totalGrade);
@@ -132,11 +131,47 @@ function getGradeBreakdown(data) {
   };
 }
 
+/**
+ * Calculate penalty for wrong answers with progressive scaling
+ * @param {number} correctPts - Number of correct answers
+ * @param {number} wrongPts - Number of wrong answers
+ * @returns {number} Penalty percentage (0-20)
+ */
+function calculateWrongAnswerPenalty(correctPts, wrongPts) {
+  const total = correctPts + wrongPts;
+  
+  // Case 1: No correct answers
+  if (correctPts === 0) {
+    if (wrongPts < 3) return 0;
+    if (wrongPts === 3) return 10;
+    if (wrongPts === 4) return 15;
+    if (wrongPts >= 5) return 20;
+  }
+  
+  // Case 2: Total answers <= 5
+  if (total <= 5) {
+    // Specific cases for small sample sizes
+    if (wrongPts === 4 && correctPts === 1) return 10;
+    if (wrongPts === 3 && correctPts === 2) return 7.5;
+    if (wrongPts === 3 && correctPts === 1) return 5;
+    return 0;
+  }
+  
+  // Case 3: Total answers > 5
+  // Penalty only if wrong answers are at least double the correct answers
+  if (wrongPts >= 2 * correctPts) {
+    return 10;
+  }
+  
+  return 0;
+}
+
 // Export functions (for module usage)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     calculateAutomaticGrade,
     getGradeBreakdown,
+    calculateWrongAnswerPenalty,
     WEIGHT_QUESTION_CREATED,
     WEIGHT_QUESTION_RATING,
     WEIGHT_QUESTION_ANSWERED

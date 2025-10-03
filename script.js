@@ -627,11 +627,12 @@
       justifications.push('Falscher Frageblock: -20%');
     }
     
-    // Additional deduction: More wrong than correct answers (-10%)
+    // Additional deduction: Progressive penalty for wrong answers
     const correctPts = row.correct_answers_points ?? 0;
     const wrongPts = row.false_answers_points ?? 0;
-    if (wrongPts > correctPts) {
-      justifications.push('Mehr falsche als richtige Antworten: -10%');
+    const penalty = calculateWrongAnswerPenalty(correctPts, wrongPts);
+    if (penalty > 0) {
+      justifications.push(`Im Verhältnis zu viele falsche Antworten (${wrongPts} falsch, ${correctPts} richtig): -${penalty}%`);
     }
     
     return justifications.map(j => '* ' + j).join('\n');
@@ -837,15 +838,8 @@
         }
       }
       
-      // Criterion 5: False answers > correct answers (only if both values exist)
-      if (isValid(student.correct_answers_points) && isValid(student.false_answers_points)) {
-        const correctPoints = parseFloat(student.correct_answers_points);
-        const falsePoints = parseFloat(student.false_answers_points);
-        if (!isNaN(correctPoints) && !isNaN(falsePoints) && falsePoints > correctPoints) {
-          flags.push('false_answers_points');
-          flags.push('correct_answers_points');
-        }
-      }
+      // Criterion 5 REMOVED: False answers no longer trigger manual review
+      // The progressive penalty system handles this automatically
       
       // Mark for manual review if any criterion is met
       if (flags.length > 0) {
@@ -1214,7 +1208,13 @@
         </ul>
       </li>
       <li style="margin-top: 10px;"><strong>Falscher Frageblock:</strong> -20% Abzug vom Gesamtergebnis</li>
-      <li style="margin-top: 10px;"><strong>Mehr falsche als richtige Antworten:</strong> -10% Abzug vom Gesamtergebnis</li>
+      <li style="margin-top: 10px;"><strong>Falsche Antworten (progressiv):</strong> Abzug variiert je nach Verhältnis falsch zu richtig:
+        <ul style="margin-top: 5px;">
+          <li>Bei 0 richtigen: 0-2 falsch = 0%, 3 falsch = -10%, 4 falsch = -15%, ≥5 falsch = -20%</li>
+          <li>Bei wenigen Antworten (1-5 gesamt): spezifische Abzüge je nach Kombination (z.B. 4F/1R = -10%, 3F/2R = -7.5%)</li>
+          <li>Bei vielen Antworten (>5): -10% nur wenn Anzahl falsche Antworten ≥ doppelt so viele richtige Antworten</li>
+        </ul>
+      </li>
     </ul>
   </div>
   
@@ -1243,8 +1243,8 @@
     <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Falscher Frageblock: -20%</code><br>
     <em>Ihre Frage wurde im falschen Themenblock erstellt (nicht dem Ihnen zugeteilten).</em></p>
     
-    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Mehr falsche als richtige Antworten: -10%</code><br>
-    <em>Sie haben mehr Fragen falsch als richtig beantwortet, was auf ungenügendes Engagement hindeutet.</em></p>
+    <p style="margin: 10px 0;"><code style="background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px;">Im Verhältnis zu viele falsche Antworten (X falsch, Y richtig): -Z%</code><br>
+    <em>Der Abzug variiert progressiv basierend auf dem Verhältnis von falschen zu richtigen Antworten. Je schlechter das Verhältnis und je mehr Antworten gegeben wurden, desto höher der Abzug (max. -20%).</em></p>
   </div>
 </div>`;
 
