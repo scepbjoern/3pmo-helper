@@ -2354,7 +2354,7 @@
         // Add to justification
         const msg = `Falsch: Frage in Block "${actualBlock}" statt "${expectedBlock}".`;
         if (!student.justification || !student.justification.includes(msg)) {
-          student.justification = student.justification ? (student.justification + ' ' + msg) : msg;
+          student.justification = student.justification ? (student.justification + '\n' + msg) : msg;
         }
       } else {
         student.wrong_block = '';
