@@ -925,9 +925,6 @@
         return `${r.total_answers_points} (R: ${correct} / F: ${wrong})`;
       })();
       
-      // Check if more wrong than correct answers
-      const hasMoreWrongThanCorrect = (r.false_answers_points ?? 0) > (r.correct_answers_points ?? 0);
-      
       // 4. Wrong block display: "YES" or "-"
       const wrongBlockDisplay = r.wrong_block === 'YES' ? 'YES' : '-';
 
@@ -942,7 +939,7 @@
         { val: r.total_comments != null ? r.total_comments : '-', key: 'total_comments' },
         { val: r.avg_difficultylevel != null ? r.avg_difficultylevel : '-', key: 'avg_difficultylevel' },
         { val: wrongBlockDisplay, key: 'wrong_block', rawVal: r.wrong_block },
-        { val: answersDisplay, key: 'total_answers_points', sortVal: r.total_answers_points, hasMoreWrong: hasMoreWrongThanCorrect }
+        { val: answersDisplay, key: 'total_answers_points', sortVal: r.total_answers_points }
       ];
 
       const reviewFlags = r.reviewFlags || [];
@@ -999,9 +996,9 @@
               td.textContent = '-';
             }
           }
-          // Punkte Antworten - highlight if flagged or more wrong than correct
+          // Punkte Antworten - only highlight if explicitly flagged (no longer for wrong > correct)
           else if (cell.key === 'total_answers_points') {
-            if (isFlagged || cell.hasMoreWrong) {
+            if (isFlagged) {
               td.innerHTML = `<span class="review-required">${escapeHtml(String(cell.val))}</span>`;
             } else {
               td.textContent = cell.val;
@@ -1289,7 +1286,19 @@
     const cell = e.target;
     const studentName = cell.dataset.student;
     const field = cell.dataset.field;
-    let value = cell.textContent.trim();
+    
+    // For justification field, preserve line breaks by converting <br> to \n
+    let value;
+    if (field === 'justification') {
+      value = cell.innerHTML
+        .replace(/<br\s*\/?>/gi, '\n')  // Convert <br> tags to \n
+        .replace(/<div>/gi, '\n')        // Convert <div> to \n (some browsers use div for line breaks)
+        .replace(/<\/div>/gi, '')        // Remove closing div tags
+        .replace(/<[^>]*>/g, '')         // Remove any other HTML tags
+        .trim();
+    } else {
+      value = cell.textContent.trim();
+    }
     
     if (!currentTestName) {
       setGradesStatus('Bitte zuerst einen Test anlegen oder laden.');
