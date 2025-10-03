@@ -1626,9 +1626,10 @@
     
     const manualGrades = {};
     combinedGradesData.forEach(row => {
-      if (row.manual_grade || row.justification || row.requiresManualReview) {
+      // Only export entries with manual grade
+      if (row.manual_grade != null && row.manual_grade !== '') {
         manualGrades[row.student_name] = {
-          manual_grade: row.manual_grade || null,
+          manual_grade: row.manual_grade,
           justification: row.justification || '',
           requiresManualReview: row.requiresManualReview || false
         };
