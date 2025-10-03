@@ -1092,6 +1092,10 @@
       return kuerzelA.localeCompare(kuerzelB, 'de-CH');
     });
 
+    // Generate filename with test name
+    const testNameSafe = currentTestName ? currentTestName.trim().replace(/\s+/g, '_') : 'Unbenannt';
+    const filename = `Erhaltene_Bewertungen_für_${testNameSafe}`;
+    
     if (window.XLSX && XLSX.utils && XLSX.writeFile) {
       const ws = XLSX.utils.json_to_sheet(filteredData);
       
@@ -1100,7 +1104,7 @@
       
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Bewertungen');
-      XLSX.writeFile(wb, '3PMo_Helper_Bewertungen.xlsx');
+      XLSX.writeFile(wb, `${filename}.xlsx`);
       setGradesStatus(`Excel exportiert (${filteredData.length} Zeilen, ${data.length - filteredData.length} Zeilen mit Kürzel "-" ausgelassen).`);
     } else {
       const csv = toCSV(data);
@@ -1108,7 +1112,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '3PMo_Helper_Bewertungen.csv';
+      a.download = `${filename}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
