@@ -144,9 +144,9 @@
   }
 
   function updateGradesButtonState() {
-    // Enable "Bewertungen generieren" if we have data from Bereich 2 or 3
+    // Always enable "Bewertungen generieren" button - validation happens in generateCombinedGrades
     if (els.btnGenerateGrades) {
-      els.btnGenerateGrades.disabled = !(extractedRows.length > 0 || rankingRows.length > 0);
+      els.btnGenerateGrades.disabled = false;
     }
   }
 
@@ -638,8 +638,21 @@
   }
 
   function generateCombinedGrades() {
-    if (!extractedRows.length && !rankingRows.length) {
-      setGradesStatus('Bitte zuerst Daten in Bereich 2 und/oder 3 extrahieren.');
+    // Check if assignment table is loaded first
+    if (!assignmentData || assignmentData.length === 0) {
+      setGradesStatus('⚠️ Bitte zuerst die Zuteilungstabelle in Bereich 1 hochladen.');
+      return;
+    }
+
+    // Check if both Bereich 2 AND Bereich 3 have data
+    if (!extractedRows.length || !rankingRows.length) {
+      if (!extractedRows.length && !rankingRows.length) {
+        setGradesStatus('⚠️ Bitte zuerst Daten in Bereich 2 (StudentQuiz) und Bereich 3 (Rangliste) extrahieren.');
+      } else if (!extractedRows.length) {
+        setGradesStatus('⚠️ Bitte zuerst Daten in Bereich 2 (StudentQuiz) extrahieren.');
+      } else {
+        setGradesStatus('⚠️ Bitte zuerst Daten in Bereich 3 (Rangliste) extrahieren.');
+      }
       return;
     }
 
@@ -2309,11 +2322,15 @@
             els.statusAssignment.textContent = `✓ Zuteilung für Test "${currentTestName}" geladen (${assignmentData.length} Einträge).`;
             els.btnClearAssignment.style.display = '';
             els.btnUploadAssignment.textContent = 'Zuteilung ersetzen';
+          } else {
+            assignmentData = [];
           }
         } catch (e) {
           console.error('Error loading assignment data:', e);
+          assignmentData = [];
         }
       } else {
+        assignmentData = [];
         els.statusAssignment.textContent = `⚠️ Zuteilung für Test "${currentTestName}" fehlt - Datei muss hochgeladen werden.`;
       }
     }
@@ -2352,7 +2369,7 @@
           student.reviewFlags.push('wrong_block');
         }
         // Add to justification
-        const msg = `Falsch: Frage in Block "${actualBlock}" statt "${expectedBlock}".`;
+        const msg = `* Falsch: Frage in Block "${actualBlock}" statt "${expectedBlock}".`;
         if (!student.justification || !student.justification.includes(msg)) {
           student.justification = student.justification ? (student.justification + '\n' + msg) : msg;
         }
@@ -2475,4 +2492,7 @@
   
   // Load helper tables from storage
   loadHelperTablesFromStorage();
+  
+  // Update button states on startup
+  updateGradesButtonState();
 })();
