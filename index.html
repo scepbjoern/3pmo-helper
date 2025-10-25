@@ -198,6 +198,41 @@
             <button id="btnCopyStudentGuide" type="button" class="secondary">Studierendenanleitung in Zwischenablage kopieren</button>
           </div>
 
+          <!-- Bonus-Filter-Konfiguration -->
+          <details class="note" id="bonusFilterConfig" style="display: none; margin-top: 15px;">
+            <summary>Bonus-Filter Konfiguration</summary>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 10px;">
+              <div>
+                <label for="filterMinRating">Min. Erhaltene Bewertung:</label>
+                <input type="number" id="filterMinRating" min="0" max="5" step="0.1" value="4.0" style="width: 100%; padding: 5px;">
+              </div>
+              <div>
+                <label for="filterMinComments">Min. Anzahl Kommentare:</label>
+                <input type="number" id="filterMinComments" min="0" step="1" value="3" style="width: 100%; padding: 5px;">
+              </div>
+              <div>
+                <label for="filterMinDifficulty">Min. Ø Schwierigkeitsgrad:</label>
+                <input type="number" id="filterMinDifficulty" min="0" max="1" step="0.01" value="0.3" style="width: 100%; padding: 5px;">
+              </div>
+              <div>
+                <label for="filterMaxDifficulty">Max. Ø Schwierigkeitsgrad:</label>
+                <input type="number" id="filterMaxDifficulty" min="0" max="1" step="0.01" value="0.7" style="width: 100%; padding: 5px;">
+              </div>
+            </div>
+            <div style="margin-top: 15px;">
+              <button id="btnApplyBonusFilter" type="button" class="primary">Bonus-Filter anwenden</button>
+            </div>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;"><strong>Hinweis:</strong> Klicken Sie auf die Schaltfläche, um nur Fragen anzuzeigen, die die Filter-Kriterien erfüllen. Markierte Fragen (0, 1, 2) bleiben bei erneutem Filtern erhalten.</p>
+          </details>
+
+          <!-- Checkbox für Export der Bonus-Spalte -->
+          <div id="exportBonusOption" style="display: none; margin-top: 10px;">
+            <label>
+              <input type="checkbox" id="chkExportBonus">
+              Bonus-Spalte in Excel exportieren (für Studierende standardmäßig ausgeblendet)
+            </label>
+          </div>
+
           <div id="statusGrades" class="status" role="status" aria-live="polite"></div>
 
           <div class="buttons" id="gradeFilterButtons" style="display: none;">
@@ -218,6 +253,7 @@
                   <th>✏️</th>
                   <th>🔍</th>
                   <th class="sortable" data-sort="student_name" data-order="asc">Student ▲</th>
+                  <th class="sortable" data-sort="bonus">Bonus</th>
                   <th class="sortable" data-sort="total_grade">Bew. tot.</th>
                   <th class="sortable" data-sort="automatic_grade">Bew. aut.</th>
                   <th class="sortable" data-sort="manual_grade">Bew. man.</th>
@@ -237,9 +273,10 @@
           <details class="note">
             <summary>Hinweise zu den Spalten</summary>
             <ul>
-              <li><strong>Man.:</strong> Checkbox „Manuell zu bewerten“. Aktiviert/Deaktiviert die Markierung und Filterbarkeit.</li>
+              <li><strong>Man.:</strong> Checkbox „Manuell zu bewerten". Aktiviert/Deaktiviert die Markierung und Filterbarkeit.</li>
               <li><strong>✏️ / 🔍:</strong> Direktlinks zum Bearbeiten bzw. zur Vorschau der Frage (falls vorhanden).</li>
-              <li><strong>Student:</strong> Anzeigename der/des Studierenden. Einträge, die „Manuell zu bewerten“ sind, werden hervorgehoben.</li>
+              <li><strong>Student:</strong> Anzeigename der/des Studierenden. Einträge, die „Manuell zu bewerten" sind, werden hervorgehoben.</li>
+              <li><strong>Bonus:</strong> Markierung für besonders gute Fragen. Werte: ? (zu prüfen), 0 (nicht geeignet), 1 (Bonus), 2 (Prüfung). Klicken zum Ändern (Zyklus: ? → 0 → 1 → 2 → ?). Erscheint nur nach Anwendung des Bonus-Filters.</li>
               <li><strong>Bew. tot.:</strong> Finale Bewertung in % (automatisch + manuell). Dient als Grundlage für die Punkte pro Test.</li>
               <li><strong>Bew. aut.:</strong> Automatisch berechnete Bewertung basierend auf Aktivitäten (Frage erstellt, Bewertung der Frage, beantwortete Fragen).</li>
               <li><strong>Bew. man.:</strong> Manuelle Anpassung in % (z. B. +10 oder −5). Wird zur automatischen Bewertung addiert.</li>

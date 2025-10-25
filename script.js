@@ -39,6 +39,16 @@
     tableHeightValue: $('#tableHeightValue'),
     gradesTableWrapper: $('#gradesTableWrapper'),
     
+    // Bonus filter UI
+    bonusFilterConfig: $('#bonusFilterConfig'),
+    filterMinRating: $('#filterMinRating'),
+    filterMinComments: $('#filterMinComments'),
+    filterMinDifficulty: $('#filterMinDifficulty'),
+    filterMaxDifficulty: $('#filterMaxDifficulty'),
+    btnApplyBonusFilter: $('#btnApplyBonusFilter'),
+    exportBonusOption: $('#exportBonusOption'),
+    chkExportBonus: $('#chkExportBonus'),
+    
     // Helper tables UI
     studentHelperFile: $('#studentHelperFile'),
     btnUploadStudentHelper: $('#btnUploadStudentHelper'),
@@ -78,6 +88,7 @@
   let currentSortColumn = 'student_name'; // Default sort column
   let currentSortOrder = 'asc'; // Default sort order
   let isFilterActive = false; // Track if manual review filter is active
+  let isBonusFilterActive = false; // Track if bonus filter is active
   let studentHelperData = []; // [{kuerzel, fullname}] - Global helper table
   let assignmentData = []; // Current test assignment data
   // Data for assignment page
@@ -784,6 +795,8 @@
     if (els.btnDownloadGrades) els.btnDownloadGrades.disabled = false;
     if (els.gradeFilterButtons) els.gradeFilterButtons.style.display = '';
     if (els.tableHeightControl) els.tableHeightControl.style.display = '';
+    if (els.bonusFilterConfig) els.bonusFilterConfig.style.display = '';
+    if (els.exportBonusOption) els.exportBonusOption.style.display = '';
 
     // Clear and collapse Bereich 2 & 3 to save browser resources
     if (els.tableBody) els.tableBody.innerHTML = '';
@@ -930,6 +943,7 @@
 
       const cells = [
         { val: r.student_name, key: 'student_name' },
+        { val: r.bonus, key: 'bonus' },
         { val: r.total_grade, key: 'total_grade' },
         { val: r.automatic_grade, key: 'automatic_grade' },
         { val: r.manual_grade, key: 'manual_grade' },
@@ -950,8 +964,38 @@
         // Check if this field is flagged for review
         const isFlagged = reviewFlags.includes(cell.key);
         
-        // Handle editable cells first (manual_grade and justification)
-        if (cell.key === 'manual_grade') {
+        // Handle Bonus column - special clickable cell
+        if (cell.key === 'bonus') {
+          if (cell.val !== undefined && cell.val !== null) {
+            // Bonus column has a value, make it clickable
+            td.style.cursor = 'pointer';
+            td.style.textAlign = 'center';
+            td.style.fontWeight = 'bold';
+            td.dataset.student = r.student_name;
+            td.dataset.field = 'bonus';
+            td.className = 'bonus-cell';
+            
+            // Display based on value
+            if (cell.val === '?') {
+              td.textContent = '?';
+              td.style.color = '#f59e0b'; // orange
+            } else if (cell.val === 0) {
+              td.textContent = '0';
+              td.style.color = '#ef4444'; // red
+            } else if (cell.val === 1) {
+              td.textContent = '1';
+              td.style.color = '#10b981'; // green
+            } else if (cell.val === 2) {
+              td.textContent = '2';
+              td.style.color = '#3b82f6'; // blue
+            }
+          } else {
+            // No value, show empty cell
+            td.textContent = '';
+          }
+        }
+        // Handle editable cells (manual_grade and justification)
+        else if (cell.key === 'manual_grade') {
           td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="manual_grade" data-placeholder="...">${cell.val || ''}</div>`;
         } else if (cell.key === 'justification') {
           td.innerHTML = `<div class="editable-cell" contenteditable="true" data-student="${escapeHtml(r.student_name)}" data-field="justification" data-placeholder="...">${(cell.val || '').replace(/\n/g, '<br>')}</div>`;
@@ -1032,6 +1076,16 @@
       });
       els.gradesTableBody.dataset.checkboxListenerAttached = 'true';
     }
+    
+    // Attach delegated event listener for bonus cells (only once)
+    if (!els.gradesTableBody.dataset.bonusListenerAttached) {
+      els.gradesTableBody.addEventListener('click', (e) => {
+        if (e.target.classList.contains('bonus-cell')) {
+          handleBonusCellClick(e);
+        }
+      });
+      els.gradesTableBody.dataset.bonusListenerAttached = 'true';
+    }
   }
 
   function downloadCombinedGradesExcel() {
@@ -1039,6 +1093,9 @@
       setGradesStatus('Keine Daten zum Exportieren. Bitte zuerst Bewertungen generieren.');
       return;
     }
+
+    // Check if Bonus column should be included
+    const includeBonus = els.chkExportBonus && els.chkExportBonus.checked;
 
     const data = combinedGradesData.map(r => {
       // Format exactly like in the table
@@ -1067,7 +1124,7 @@
       // 5. Get Kürzel from student helper table
       const kuerzel = getKuerzelFromName(r.student_name);
       
-      return {
+      const row = {
         'Kürzel': kuerzel || '-',
         'Bew. tot.': r.total_grade != null ? `${r.total_grade}%` : '-',
         'Bew. aut.': r.automatic_grade != null ? `${r.automatic_grade}%` : '-',
@@ -1080,6 +1137,13 @@
         'Falscher Frageblock': wrongBlockDisplay,
         'Beantw./Bew. Fragen': answersDisplay
       };
+      
+      // Add Bonus column if checkbox is checked
+      if (includeBonus && r.bonus !== undefined && r.bonus !== null) {
+        row['Bonus'] = String(r.bonus);
+      }
+      
+      return row;
     });
 
     // Filter out rows with Kürzel "-"
@@ -1381,6 +1445,43 @@
     }
   }
 
+  // --- Bonus cell click handler ---
+  function handleBonusCellClick(e) {
+    const cell = e.target;
+    const studentName = cell.dataset.student;
+    const student = combinedGradesData.find(s => s.student_name === studentName);
+    
+    if (student && student.bonus !== undefined && student.bonus !== null) {
+      // Cycle through: ? -> 0 -> 1 -> 2 -> ?
+      if (student.bonus === '?') {
+        student.bonus = 0;
+      } else if (student.bonus === 0) {
+        student.bonus = 1;
+      } else if (student.bonus === 1) {
+        student.bonus = 2;
+      } else if (student.bonus === 2) {
+        student.bonus = '?';
+      }
+      
+      // Update cell display
+      cell.textContent = String(student.bonus);
+      
+      // Update color
+      if (student.bonus === '?') {
+        cell.style.color = '#f59e0b'; // orange
+      } else if (student.bonus === 0) {
+        cell.style.color = '#ef4444'; // red
+      } else if (student.bonus === 1) {
+        cell.style.color = '#10b981'; // green
+      } else if (student.bonus === 2) {
+        cell.style.color = '#3b82f6'; // blue
+      }
+      
+      // Save changes
+      saveCurrentTestData();
+    }
+  }
+
   function filterManualReviewOnly() {
     const rows = els.gradesTableBody && els.gradesTableBody.querySelectorAll('tr');
     if (!rows) return;
@@ -1404,7 +1505,64 @@
       tr.style.display = '';
     });
     isFilterActive = false;
+    isBonusFilterActive = false;
     setGradesStatus(`Alle ${rows.length} Studierenden angezeigt.`);
+  }
+
+  // --- Bonus filter ---
+  function applyBonusFilter() {
+    if (!combinedGradesData || !combinedGradesData.length) {
+      setGradesStatus('Keine Daten vorhanden. Bitte zuerst Bewertungen generieren.');
+      return;
+    }
+    
+    // Get filter criteria
+    const minRating = parseFloat(els.filterMinRating.value) || 0;
+    const minComments = parseInt(els.filterMinComments.value) || 0;
+    const minDifficulty = parseFloat(els.filterMinDifficulty.value) || 0;
+    const maxDifficulty = parseFloat(els.filterMaxDifficulty.value) || 1;
+    
+    let matchedCount = 0;
+    let newMatchCount = 0;
+    
+    // Apply filter
+    combinedGradesData.forEach(student => {
+      // Calculate average rating
+      const avgRating = (student.rating_points != null && student.question_count != null && student.question_count > 0)
+        ? student.rating_points / student.question_count
+        : 0;
+      
+      const comments = student.total_comments ?? 0;
+      const difficulty = student.avg_difficultylevel ?? null;
+      
+      // Check if student matches filter criteria
+      const matchesRating = avgRating >= minRating;
+      const matchesComments = comments >= minComments;
+      const matchesDifficulty = (difficulty !== null && difficulty >= minDifficulty && difficulty <= maxDifficulty);
+      
+      const matchesFilter = matchesRating && matchesComments && matchesDifficulty;
+      
+      if (matchesFilter) {
+        matchedCount++;
+        // Only set to '?' if bonus is not already set (undefined or null)
+        if (student.bonus === undefined || student.bonus === null) {
+          student.bonus = '?';
+          newMatchCount++;
+        }
+      }
+      // If bonus was already set, keep it (don't change)
+    });
+    
+    // Mark filter as active
+    isBonusFilterActive = true;
+    
+    // Re-render table
+    renderCombinedGradesTable(combinedGradesData);
+    
+    // Save changes
+    saveCurrentTestData();
+    
+    setGradesStatus(`Bonus-Filter angewendet: ${matchedCount} Fragen entsprechen den Kriterien (${newMatchCount} neu markiert mit "?").`);
   }
 
   // --- Table sorting ---
@@ -1604,6 +1762,10 @@
         row.manual_grade = stored.manual_grade || null;
         row.justification = stored.justification || '';
         row.requiresManualReview = stored.requiresManualReview || false;
+        // Apply bonus if stored
+        if (stored.bonus !== undefined && stored.bonus !== null) {
+          row.bonus = stored.bonus;
+        }
         // Recalculate total_grade based on manual delta
         recalculateTotalGrade(row);
       }
@@ -1616,15 +1778,19 @@
   function saveCurrentTestData() {
     if (!currentTestName) return;
     
-    // Extract only manual grades
+    // Extract manual grades and bonus values
     const manualGrades = {};
     combinedGradesData.forEach(row => {
-      if (row.manual_grade || row.justification || row.requiresManualReview) {
+      if (row.manual_grade || row.justification || row.requiresManualReview || (row.bonus !== undefined && row.bonus !== null)) {
         manualGrades[row.student_name] = {
           manual_grade: row.manual_grade || null,
           justification: row.justification || '',
           requiresManualReview: row.requiresManualReview || false
         };
+        // Include bonus if it exists
+        if (row.bonus !== undefined && row.bonus !== null) {
+          manualGrades[row.student_name].bonus = row.bonus;
+        }
       }
     });
     
@@ -1639,13 +1805,17 @@
     
     const manualGrades = {};
     combinedGradesData.forEach(row => {
-      // Only export entries with manual grade
-      if (row.manual_grade != null && row.manual_grade !== '') {
+      // Export entries with manual grade or bonus
+      if (row.manual_grade != null && row.manual_grade !== '' || (row.bonus !== undefined && row.bonus !== null)) {
         manualGrades[row.student_name] = {
-          manual_grade: row.manual_grade,
+          manual_grade: row.manual_grade || null,
           justification: row.justification || '',
           requiresManualReview: row.requiresManualReview || false
         };
+        // Include bonus if it exists
+        if (row.bonus !== undefined && row.bonus !== null) {
+          manualGrades[row.student_name].bonus = row.bonus;
+        }
       }
     });
     
@@ -2440,6 +2610,7 @@
   }
   if (els.btnFilterManual) els.btnFilterManual.addEventListener('click', filterManualReviewOnly);
   if (els.btnShowAll) els.btnShowAll.addEventListener('click', showAllGrades);
+  if (els.btnApplyBonusFilter) els.btnApplyBonusFilter.addEventListener('click', applyBonusFilter);
   
   // Sortable table headers
   document.querySelectorAll('#gradesTable th.sortable').forEach(th => {
