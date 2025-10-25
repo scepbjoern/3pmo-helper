@@ -90,6 +90,7 @@
   let currentSortOrder = 'asc'; // Default sort order
   let isFilterActive = false; // Track if manual review filter is active
   let isBonusFilterActive = false; // Track if bonus filter is active
+  let activeFilterType = null; // Track which filter is active: 'manual', 'bonus', or null
   let studentHelperData = []; // [{kuerzel, fullname}] - Global helper table
   let assignmentData = []; // Current test assignment data
   // Data for assignment page
@@ -791,6 +792,7 @@
 
     // Reset filter status
     isFilterActive = false;
+    activeFilterType = null;
 
     // Enable download button and show filter buttons
     if (els.btnDownloadGrades) els.btnDownloadGrades.disabled = false;
@@ -1496,6 +1498,7 @@
       }
     });
     isFilterActive = true;
+    activeFilterType = 'manual';
     setGradesStatus(`${visibleCount} manuell zu bewertende Studierende angezeigt.`);
   }
 
@@ -1514,6 +1517,7 @@
       }
     });
     isFilterActive = true;
+    activeFilterType = 'bonus';
     setGradesStatus(`${visibleCount} mit Bonus ? markierte Fragen angezeigt.`);
   }
 
@@ -1525,6 +1529,7 @@
     });
     isFilterActive = false;
     isBonusFilterActive = false;
+    activeFilterType = null;
     setGradesStatus(`Alle ${rows.length} Studierenden angezeigt.`);
   }
 
@@ -1642,8 +1647,10 @@
     renderCombinedGradesTable(combinedGradesData);
     
     // Re-apply filter if it was active
-    if (isFilterActive) {
+    if (isFilterActive && activeFilterType === 'manual') {
       filterManualReviewOnly();
+    } else if (isFilterActive && activeFilterType === 'bonus') {
+      filterBonusQuestions();
     }
   }
   
