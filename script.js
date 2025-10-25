@@ -734,10 +734,15 @@
         totalAnswersPoints = falsePts;
       }
 
+      // Extract question block from question name
+      const questionName = sqData.length > 0 ? sqData[0].questionname : null;
+      const questionBlock = questionName ? extractBlockPrefix(questionName) : null;
+
       const row = {
         student_name: displayName,
         // From Bereich 2 (StudentQuiz)
-        question_name: sqData.length > 0 ? sqData[0].questionname : null,
+        question_name: questionName,
+        question_block: questionBlock,
         question_count: questionCount > 0 ? questionCount : null,
         avg_difficultylevel: avgDifficulty,
         avg_rate: avgRate,
@@ -953,6 +958,7 @@
         { val: r.manual_grade, key: 'manual_grade' },
         { val: r.justification, key: 'justification' },
         { val: questionCountDisplay, key: 'question_count', sortVal: r.question_count, isInvalid: isQuestionCountInvalid },
+        { val: r.question_block || '-', key: 'question_block' },
         { val: ratingDisplay, key: 'rating_points', sortVal: r.rating_points },
         { val: r.total_comments != null ? r.total_comments : '-', key: 'total_comments' },
         { val: r.avg_difficultylevel != null ? r.avg_difficultylevel : '-', key: 'avg_difficultylevel' },
@@ -1135,6 +1141,7 @@
         'Bew. man.': r.manual_grade ?? '',
         'Begründung': r.justification ?? '',
         'Fragen erstellt': questionCountDisplay,
+        'Frageblock': r.question_block || '-',
         'Erhaltene Bewertung': ratingDisplay,
         'Σ Komm.': r.total_comments ?? '-',
         'Ø Schw.': r.avg_difficultylevel ?? '-',
