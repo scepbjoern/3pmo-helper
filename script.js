@@ -33,6 +33,7 @@
     gradesTableBody: $('#gradesTable tbody'),
     gradeFilterButtons: $('#gradeFilterButtons'),
     btnFilterManual: $('#btnFilterManual'),
+    btnFilterBonusQuestions: $('#btnFilterBonusQuestions'),
     btnShowAll: $('#btnShowAll'),
     tableHeightControl: $('#tableHeightControl'),
     tableHeightSlider: $('#tableHeightSlider'),
@@ -978,16 +979,16 @@
             // Display based on value
             if (cell.val === '?') {
               td.textContent = '?';
-              td.style.color = '#f59e0b'; // orange
+              td.style.color = '#3b82f6'; // blue
             } else if (cell.val === 0) {
               td.textContent = '0';
-              td.style.color = '#ef4444'; // red
+              td.style.color = '#000000'; // black
             } else if (cell.val === 1) {
               td.textContent = '1';
-              td.style.color = '#10b981'; // green
+              td.style.color = '#86efac'; // light green
             } else if (cell.val === 2) {
               td.textContent = '2';
-              td.style.color = '#3b82f6'; // blue
+              td.style.color = '#16a34a'; // dark green
             }
           } else {
             // No value, show empty cell
@@ -1468,13 +1469,13 @@
       
       // Update color
       if (student.bonus === '?') {
-        cell.style.color = '#f59e0b'; // orange
-      } else if (student.bonus === 0) {
-        cell.style.color = '#ef4444'; // red
-      } else if (student.bonus === 1) {
-        cell.style.color = '#10b981'; // green
-      } else if (student.bonus === 2) {
         cell.style.color = '#3b82f6'; // blue
+      } else if (student.bonus === 0) {
+        cell.style.color = '#000000'; // black
+      } else if (student.bonus === 1) {
+        cell.style.color = '#86efac'; // light green
+      } else if (student.bonus === 2) {
+        cell.style.color = '#16a34a'; // dark green
       }
       
       // Save changes
@@ -1496,6 +1497,24 @@
     });
     isFilterActive = true;
     setGradesStatus(`${visibleCount} manuell zu bewertende Studierende angezeigt.`);
+  }
+
+  function filterBonusQuestions() {
+    const rows = els.gradesTableBody && els.gradesTableBody.querySelectorAll('tr');
+    if (!rows) return;
+    let visibleCount = 0;
+    rows.forEach(tr => {
+      const studentName = tr.dataset.studentName;
+      const student = combinedGradesData.find(s => s.student_name === studentName);
+      if (student && student.bonus === '?') {
+        tr.style.display = '';
+        visibleCount++;
+      } else {
+        tr.style.display = 'none';
+      }
+    });
+    isFilterActive = true;
+    setGradesStatus(`${visibleCount} mit Bonus ? markierte Fragen angezeigt.`);
   }
 
   function showAllGrades() {
@@ -1555,6 +1574,11 @@
     
     // Mark filter as active
     isBonusFilterActive = true;
+    
+    // Change button text after first use
+    if (els.btnApplyBonusFilter) {
+      els.btnApplyBonusFilter.textContent = 'Bonus-Filter erneut anwenden';
+    }
     
     // Re-render table
     renderCombinedGradesTable(combinedGradesData);
@@ -1724,6 +1748,11 @@
     setTestStatus(`Test "${testName}" erstellt.`);
     els.testNameInput.value = testName;
     
+    // Reset bonus filter button text
+    if (els.btnApplyBonusFilter) {
+      els.btnApplyBonusFilter.textContent = 'Bonus-Filter anwenden';
+    }
+    
     // Load HTML for this test
     loadHtmlForCurrentTest();
     loadHelperTablesFromStorage();
@@ -1746,6 +1775,11 @@
     setCurrentTestName(testName);
     applyManualGradesFromStorage(data);
     setTestStatus(`Test "${testName}" geladen.`);
+    
+    // Reset bonus filter button text
+    if (els.btnApplyBonusFilter) {
+      els.btnApplyBonusFilter.textContent = 'Bonus-Filter anwenden';
+    }
     
     // Load HTML for this test
     loadHtmlForCurrentTest();
@@ -2609,6 +2643,7 @@
     console.error('btnCopyStudentGuide NOT found!');
   }
   if (els.btnFilterManual) els.btnFilterManual.addEventListener('click', filterManualReviewOnly);
+  if (els.btnFilterBonusQuestions) els.btnFilterBonusQuestions.addEventListener('click', filterBonusQuestions);
   if (els.btnShowAll) els.btnShowAll.addEventListener('click', showAllGrades);
   if (els.btnApplyBonusFilter) els.btnApplyBonusFilter.addEventListener('click', applyBonusFilter);
   

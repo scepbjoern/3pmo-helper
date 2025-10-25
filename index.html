@@ -199,12 +199,12 @@
           </div>
 
           <!-- Bonus-Filter-Konfiguration -->
-          <details class="note" id="bonusFilterConfig" style="display: none; margin-top: 15px;">
-            <summary>Bonus-Filter Konfiguration</summary>
+          <div id="bonusFilterConfig" style="display: none; margin-top: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9;">
+            <h4 style="margin-top: 0;">Bonus-Filter Konfiguration</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 10px;">
               <div>
                 <label for="filterMinRating">Min. Erhaltene Bewertung:</label>
-                <input type="number" id="filterMinRating" min="0" max="5" step="0.1" value="4.0" style="width: 100%; padding: 5px;">
+                <input type="number" id="filterMinRating" min="0" max="5" step="0.1" value="4.5" style="width: 100%; padding: 5px;">
               </div>
               <div>
                 <label for="filterMinComments">Min. Anzahl Kommentare:</label>
@@ -212,24 +212,24 @@
               </div>
               <div>
                 <label for="filterMinDifficulty">Min. Ø Schwierigkeitsgrad:</label>
-                <input type="number" id="filterMinDifficulty" min="0" max="1" step="0.01" value="0.3" style="width: 100%; padding: 5px;">
+                <input type="number" id="filterMinDifficulty" min="0" max="1" step="0.01" value="0.4" style="width: 100%; padding: 5px;">
               </div>
               <div>
                 <label for="filterMaxDifficulty">Max. Ø Schwierigkeitsgrad:</label>
-                <input type="number" id="filterMaxDifficulty" min="0" max="1" step="0.01" value="0.7" style="width: 100%; padding: 5px;">
+                <input type="number" id="filterMaxDifficulty" min="0" max="1" step="0.01" value="0.6" style="width: 100%; padding: 5px;">
               </div>
             </div>
             <div style="margin-top: 15px;">
               <button id="btnApplyBonusFilter" type="button" class="primary">Bonus-Filter anwenden</button>
             </div>
-            <p style="margin-top: 10px; font-size: 0.9em; color: #666;"><strong>Hinweis:</strong> Klicken Sie auf die Schaltfläche, um nur Fragen anzuzeigen, die die Filter-Kriterien erfüllen. Markierte Fragen (0, 1, 2) bleiben bei erneutem Filtern erhalten.</p>
-          </details>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;"><strong>Hinweis:</strong> Klicken Sie auf die Schaltfläche, um Fragen zu markieren, die die Filter-Kriterien erfüllen. Markierte Fragen (0, 1, 2) bleiben bei erneutem Filtern erhalten.</p>
+          </div>
 
           <!-- Checkbox für Export der Bonus-Spalte -->
           <div id="exportBonusOption" style="display: none; margin-top: 10px;">
             <label>
               <input type="checkbox" id="chkExportBonus">
-              Bonus-Spalte in Excel exportieren (für Studierende standardmäßig ausgeblendet)
+              Bonus-Spalte in Excel exportieren
             </label>
           </div>
 
@@ -237,6 +237,7 @@
 
           <div class="buttons" id="gradeFilterButtons" style="display: none;">
             <button id="btnFilterManual" type="button">Nur manuell zu Bewertende anzeigen</button>
+            <button id="btnFilterBonusQuestions" type="button">Mit Bonus ? markierte anzeigen</button>
             <button id="btnShowAll" type="button">Alle anzeigen</button>
           </div>
 
