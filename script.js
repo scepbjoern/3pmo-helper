@@ -1573,13 +1573,21 @@
       
       if (matchesFilter) {
         matchedCount++;
-        // Only set to '?' if bonus is not already set (undefined or null)
-        if (student.bonus === undefined || student.bonus === null) {
+        // Set to '?' if bonus is not set OR if it's currently '?'
+        if (student.bonus === undefined || student.bonus === null || student.bonus === '?') {
+          if (student.bonus !== '?') {
+            newMatchCount++;
+          }
           student.bonus = '?';
-          newMatchCount++;
         }
+        // If bonus is 0, 1, or 2 (manual decision), keep it unchanged
+      } else {
+        // If student doesn't match filter and has '?', remove it
+        if (student.bonus === '?') {
+          student.bonus = null;
+        }
+        // If bonus is 0, 1, or 2 (manual decision), keep it unchanged
       }
-      // If bonus was already set, keep it (don't change)
     });
     
     // Mark filter as active
