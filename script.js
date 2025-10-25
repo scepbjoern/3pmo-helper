@@ -42,6 +42,7 @@
     
     // Bonus filter UI
     bonusFilterConfig: $('#bonusFilterConfig'),
+    filterMinTotalGrade: $('#filterMinTotalGrade'),
     filterMinRating: $('#filterMinRating'),
     filterMinComments: $('#filterMinComments'),
     filterMinDifficulty: $('#filterMinDifficulty'),
@@ -1541,6 +1542,7 @@
     }
     
     // Get filter criteria
+    const minTotalGrade = parseFloat(els.filterMinTotalGrade.value) || 0;
     const minRating = parseFloat(els.filterMinRating.value) || 0;
     const minComments = parseInt(els.filterMinComments.value) || 0;
     const minDifficulty = parseFloat(els.filterMinDifficulty.value) || 0;
@@ -1551,20 +1553,23 @@
     
     // Apply filter
     combinedGradesData.forEach(student => {
-      // Calculate average rating
+      // Calculate average rating (convert to number)
       const avgRating = (student.rating_points != null && student.question_count != null && student.question_count > 0)
-        ? student.rating_points / student.question_count
+        ? parseFloat(student.rating_points) / parseFloat(student.question_count)
         : 0;
       
-      const comments = student.total_comments ?? 0;
-      const difficulty = student.avg_difficultylevel ?? null;
+      // Convert all values to numbers for proper comparison
+      const comments = parseInt(student.total_comments) || 0;
+      const difficulty = student.avg_difficultylevel != null ? parseFloat(student.avg_difficultylevel) : null;
+      const totalGrade = parseFloat(student.total_grade) || 0;
       
       // Check if student matches filter criteria
+      const matchesTotalGrade = totalGrade >= minTotalGrade;
       const matchesRating = avgRating >= minRating;
       const matchesComments = comments >= minComments;
-      const matchesDifficulty = (difficulty !== null && difficulty >= minDifficulty && difficulty <= maxDifficulty);
+      const matchesDifficulty = (difficulty !== null && !isNaN(difficulty) && difficulty >= minDifficulty && difficulty <= maxDifficulty);
       
-      const matchesFilter = matchesRating && matchesComments && matchesDifficulty;
+      const matchesFilter = matchesTotalGrade && matchesRating && matchesComments && matchesDifficulty;
       
       if (matchesFilter) {
         matchedCount++;
