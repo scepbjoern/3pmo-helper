@@ -329,7 +329,48 @@
             <p><strong>Zweck:</strong> Diese Kriterien helfen dabei, Studierende zu identifizieren, die besondere Aufmerksamkeit benötigen oder bei denen die automatische Bewertung möglicherweise nicht angemessen ist.</p>
             
             <h4>Manuelle Bewertung</h4>
-            <p>Nutzen Sie die Spalten <strong>„Bew. man.“</strong> (Anpassung in %, z. B. +10 oder −5) und <strong>„Begründung“</strong> (Text) zur fachlichen Korrektur. Setzen Sie manuelle Kommentare <em>unter</em> die automatischen Begründungen, beginnen Sie mit einem Zeilenumbruch und einem Stern (<code>*</code>), z. B.:<br>„<code>* Nach Sichtung der Frage Qualität dennoch ausreichend</code>“.</p>
+            <p>Nutzen Sie die Spalten <strong>„Bew. man."</strong> (Anpassung in %, z. B. +10 oder −5) und <strong>„Begründung"</strong> (Text) zur fachlichen Korrektur. Setzen Sie manuelle Kommentare <em>unter</em> die automatischen Begründungen, beginnen Sie mit einem Zeilenumbruch und einem Stern (<code>*</code>), z. B.:<br>„<code>* Nach Sichtung der Frage Qualität dennoch ausreichend</code>".</p>
+          </details>
+
+          <details class="note">
+            <summary>Bonus-Feature: Identifikation besonders guter Fragen</summary>
+            
+            <h4>Zweck</h4>
+            <p>Das Bonus-Feature hilft dabei, besonders qualitativ hochwertige Fragen zu identifizieren, die für Bonuspunkte oder zur Verwendung in Prüfungen geeignet sind. Es kombiniert mehrere Qualitätskriterien und ermöglicht eine systematische Bewertung.</p>
+            
+            <h4>Workflow</h4>
+            <ol>
+              <li><strong>Filter-Kriterien konfigurieren</strong> (nach Klick auf "Bewertungen generieren"):
+                <ul style="margin-top: 5px;">
+                  <li><strong>Min. Bewertung total (%):</strong> Standardwert 90% – Studierende mit hoher Gesamtbewertung zeigen gutes Verständnis</li>
+                  <li><strong>Min. Erhaltene Bewertung:</strong> Standardwert 4.5 von 5 Sternen – hohe Qualität der erstellten Frage</li>
+                  <li><strong>Min. Anzahl Kommentare:</strong> Standardwert 3 – ausreichende Bewertungsbasis</li>
+                  <li><strong>Min. Ø Schwierigkeitsgrad:</strong> Standardwert 0.4 – nicht zu einfach</li>
+                  <li><strong>Max. Ø Schwierigkeitsgrad:</strong> Standardwert 0.6 – nicht zu schwer</li>
+                </ul>
+              </li>
+              <li><strong>„Bonus-Filter anwenden"</strong> klicken → Alle Fragen, die <em>alle</em> Kriterien erfüllen, werden automatisch mit <strong>„?"</strong> (zu prüfen) markiert</li>
+              <li><strong>„Mit Bonus ? markierte anzeigen"</strong> klicken → Nur zu prüfende Fragen werden angezeigt</li>
+              <li><strong>Manuelle Bewertung:</strong> Auf die Bonus-Zelle klicken, um durch folgende Werte zu wechseln:
+                <ul style="margin-top: 5px;">
+                  <li><strong style="color: #3b82f6;">?</strong> (blau) = Zu prüfen – automatisch gesetzt, noch nicht bewertet</li>
+                  <li><strong style="color: #000000;">0</strong> (schwarz) = Nicht geeignet – Frage erfüllt zwar Kriterien, ist aber nicht für Bonus/Prüfung geeignet</li>
+                  <li><strong style="color: #86efac;">1</strong> (hellgrün) = Bonus – Frage ist für Bonuspunkte geeignet</li>
+                  <li><strong style="color: #16a34a;">2</strong> (dunkelgrün) = Prüfung – Frage ist für die Prüfung geeignet</li>
+                </ul>
+              </li>
+              <li><strong>Filterkriterien anpassen:</strong> Bei Bedarf Werte ändern und erneut anwenden → <strong>„?"</strong>-Markierungen werden aktualisiert, aber bereits manuell bewertete Fragen (0, 1, 2) bleiben erhalten</li>
+              <li><strong>Excel-Export:</strong> Checkbox „Bonus-Spalte in Excel exportieren" aktivieren, wenn Bonus-Daten exportiert werden sollen</li>
+            </ol>
+            
+            <h4>Wichtige Hinweise</h4>
+            <ul>
+              <li><strong>Dynamische „?" Markierungen:</strong> Werden bei erneutem Filtern automatisch aktualisiert basierend auf den Kriterien</li>
+              <li><strong>Permanente Bewertungen (0, 1, 2):</strong> Bleiben bei erneutem Filtern erhalten – dies sind Ihre finalen Entscheidungen</li>
+              <li><strong>Alle Kriterien müssen erfüllt sein:</strong> Eine Frage wird nur markiert, wenn sie ALLE konfigurierten Kriterien erfüllt</li>
+              <li><strong>Sortierung:</strong> Der Bonus-Filter bleibt auch nach Sortierung der Tabelle aktiv</li>
+              <li><strong>Persistenz:</strong> Alle Bonus-Markierungen werden automatisch im LocalStorage gespeichert</li>
+            </ul>
           </details>
         </div>
       </details>

@@ -20,8 +20,16 @@ Die App ist vollständig clientseitig, benötigt keinen Server und kann einfach 
 - Automatische Bewertung je Studierende/n gemäß Gewichtung 50/25/25 (siehe Abschnitt „Hinweise zur Bewertung“ in der App)
 - Zusätzliche Abzüge: falscher Frageblock (−20), mehr falsche als richtige Antworten (−10)
 - Markierung „Manuell zu bewerten“, wenn definierte Kriterien zutreffen (z. B. Rating < 4, wenig Kommentare, etc.)
+- **Bonus-Feature**: Identifikation besonders guter Fragen für Bonuspunkte oder Prüfungen
+  - Konfigurierbare Filter-Kriterien: Min. Bewertung total (90%), Min. erhaltene Bewertung (4.5), Min. Kommentare (3), Schwierigkeitsgrad-Range (0.4-0.6)
+  - Automatische Markierung mit "?" für zu prüfende Fragen
+  - Manuelle Bewertung: Click-Zyklus ? → 0 (nicht geeignet) → 1 (Bonus) → 2 (Prüfung) → ?
+  - Filter "Mit Bonus ? markierte anzeigen" zum schnellen Durchsehen
+  - Optionaler Excel-Export der Bonus-Spalte
+  - Dynamische Anpassung: "?" wird bei Änderung der Filterkriterien automatisch aktualisiert, manuelle Bewertungen (0/1/2) bleiben erhalten
 - Direkte Bearbeitung in der Tabelle: `Bew. man.` und `Begründung` sind editierbar; Zeilenumbrüche in Begründungen werden unterstützt
-- „Nur manuell zu Bewertende anzeigen“ Filter und Sortierfunktionen pro Spalte
+- Filter: „Nur manuell zu Bewertende anzeigen“, „Mit Bonus ? markierte anzeigen“, „Alle anzeigen“
+- Sortierfunktionen pro Spalte (Filter bleibt nach Sortierung aktiv)
 - Excel‑Export mit Formatierung (Gitternetzlinien via Zellrahmen, Textumbruch in Spalte Begründung, vertikale Ausrichtung oben)
 - Export filtert Einträge mit `Kürzel = '-'` automatisch heraus und sortiert nach Kürzel
 - Extraktion in Bereich 2: Felder `questionname`, `creatorname`, `difficultylevel` (aus `data-difficultylevel`), `rate` (aus `data-rate`), `comments` (`n.a.` → 0)
@@ -70,13 +78,20 @@ Die App ist vollständig clientseitig, benötigt keinen Server und kann einfach 
 
 ### StudentQuiz‑Bewertung
 1. In Bereich 1 einen Test anlegen oder laden (Name angeben)
-2. Optional: „Studierenden‑Hilfstabelle“ hochladen (global gespeichert)
-3. Optional: „Zuteilungstabelle für aktuellen Test“ laden (testspezifisch gespeichert)
+2. Optional: „Studierenden‑Hilfstabelle" hochladen (global gespeichert)
+3. Optional: „Zuteilungstabelle für aktuellen Test" laden (testspezifisch gespeichert)
 4. Bereich 2: StudentQuiz‑HTML einfügen und extrahieren
 5. Bereich 3: Ranglisten‑HTML einfügen und extrahieren
-6. Bereich 4: „Bewertungen generieren“ klicken, anschließend bei Bedarf `Bew. man.` und `Begründung` bearbeiten
-7. Optional: „Nur manuell zu Bewertende anzeigen“ aktivieren
-8. „Bewertungen als Excel herunterladen“
+6. Bereich 4: „Bewertungen generieren" klicken, anschließend bei Bedarf `Bew. man.` und `Begründung` bearbeiten
+7. Optional: „Nur manuell zu Bewertende anzeigen" aktivieren
+8. Optional (Bonus-Feature):
+   - Bonus-Filter-Kriterien anpassen (Min. Bewertung total, Erhaltene Bewertung, Kommentare, Schwierigkeitsgrad)
+   - „Bonus-Filter anwenden" klicken → Fragen, die alle Kriterien erfüllen, werden mit "?" markiert
+   - „Mit Bonus ? markierte anzeigen" klicken, um nur zu prüfende Fragen anzuzeigen
+   - Auf Bonus-Zelle klicken, um manuell zu bewerten: ? → 0 (nicht geeignet) → 1 (Bonus) → 2 (Prüfung) → ?
+   - Bei Bedarf Filterkriterien anpassen und erneut anwenden (bereits manuell bewertete Fragen bleiben erhalten)
+   - Checkbox „Bonus-Spalte in Excel exportieren" aktivieren, wenn Bonus-Daten exportiert werden sollen
+9. „Bewertungen als Excel herunterladen“
 
 ### Studierenden‑Themenzuteilung
 1. Excel „Kuerzel/Klasse“ hochladen (erstes Tabellenblatt wird gelesen)
@@ -108,7 +123,7 @@ Mögliche Download‑Quellen für SheetJS:
 Alle Daten bleiben lokal im Browser (LocalStorage). Es findet keine Server‑Verarbeitung statt.
 
 Persistenz (Überblick):
-- Pro Test gespeichert: eingegebene HTML‑Extrakte (StudentQuiz/Rangliste), manuelle Bewertungen/Begründungen, Markierung „manuell zu bewerten“, Zuteilungstabelle
+- Pro Test gespeichert: eingegebene HTML‑Extrakte (StudentQuiz/Rangliste), manuelle Bewertungen/Begründungen, Markierung „manuell zu bewerten“, Bonus-Markierungen (?, 0, 1, 2), Zuteilungstabelle
 - Global gespeichert: „Studierenden‑Hilfstabelle“, Tabellenhöhe‑Einstellung für Bereich 4
 - „Test löschen“ entfernt alle Daten des aktuellen Tests (die globale Hilfstabelle bleibt erhalten)
-– Export/Import (JSON) enthält: manuelle Noten, Begründungen, „manuell zu bewerten“-Markierung
+– Export/Import (JSON) enthält: manuelle Noten, Begründungen, „manuell zu bewerten“-Markierung, Bonus-Markierungen
